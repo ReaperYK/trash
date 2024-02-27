@@ -150,20 +150,11 @@ BOOT_MODE=''
 # ascii art
 ASCII='https://raw.githubusercontent.com/ReaperYK/arch-installer/master/file/rinuaa3.txt'
 
-# aria2c command
-ARIA2CC='XferCommand = /usr/bin/aria2c --allow-overwrite=true --continue=true --file-allocation=none --log-level=error --max-tries=2 --max-connection-per-server=2 --max-file-not-found=5 --min-split-size=5M --no-conf --remote-time=true --summary-interval=60 --dir=/ --out %o %u'
-
 # activate advaneced ask (default=FALSE)
 USE_ADV_ASK=$FALSE
 
 # Linux LTS
 ASK_LTS_LINUX=$FALSE
-
-# NVIDIA
-NVIDIA=$FALSE
-
-# extra packages group select
-EXTRA_PACKAGES_GROUP=""
 
 # activate /var /tmp /opt /srv /home
 USE_ADV_PART=$FALSE
@@ -171,14 +162,16 @@ USE_ADV_PART=$FALSE
 # Exit on CTRL + C
 CTRL_C_PROTECT=$FALSE
 
-# BA Packages retry control
-BARCH_INSTALL_PACKAGES_RETRY=$FALSE
-
 LIGHTWEIGHT_PACKAGES_GROUP=$FALSE
 
 ASK_BLACKARCH_SETUP=""
 
 BLACKARCH_SETUP=$FALSE
+if [ "$1" = "--adv-option" ]; then
+  USE_ADV_ASK=$TRUE
+else
+  USE_ADV_ASK=$FALSE
+fi
 
 ctrl_c() {
   if [ $CTRL_C_PROTECT != "$TRUE" ]; then
@@ -552,7 +545,10 @@ update_pacman()
 
   enable_pacman_color
   sleep_clear 1
-
+  
+  pacman_pdl_setup
+  sleep_clear 1
+  
   update_pkg_database
   sleep_clear 1
 
@@ -789,11 +785,17 @@ check_inet_conn()
 }
 
 pacman_pdl_setup()
-{
-  title 'Pacman > Parallel Download'
-  printf1 'Setting up /etc/pacman.conf'
-  sed -i "s/#ParallelDownloads/ParallelDownloads/" "/mnt/etc/pacman.conf"
-  
+{ 
+  if [ "$1" = "chroot" ]; then
+   title 'Pacman > Parallel Download'
+   printf1 'Setting up /etc/pacman.conf'
+   sed -i "s/#ParallelDownloads/ParallelDownloads/" "/mnt/etc/pacman.conf"
+  else 
+     title 'Pacman > Parallel Download'
+     printf1 'Setting up /etc/pacman.conf'
+     sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
+  fi
+
   return $SUCCESS
 }
 
@@ -1667,7 +1669,7 @@ setup_extra_packages()
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    screen smartmontools strace tmux udisks2 unace unrar
    unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji noto-fonts-emoji noto-fonts noto-fonts-cjk noto-fonts-extra'
+   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
    network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
    dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
    iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
@@ -1681,7 +1683,7 @@ setup_extra_packages()
   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
   all="$all $misc $network $xorg $audio $media $filemanager"
 
-  sleep_clear 0.5
+  sleep_clear 1
   install_extra_packages
 
   return $SUCCESS
@@ -1819,7 +1821,7 @@ else
   sleep_clear 1
   fi
 
-  pacman_pdl_setup
+  pacman_pdl_setup chroot
   sleep_clear 1
   
   reinitialize_keyring
@@ -2304,9 +2306,9 @@ config_pacman_dl()
   title 'Pacman Settings > Download Options'
   printf1 'Setting up /etc/pacman.conf'
   if [ "$1" = "liveenv" ]; then
-  sed -i '20 s/^#//' /etc/pacman.conf
+   sed -i '20 s/^#//' /etc/pacman.conf
   elif [ "$1" = "chroot" ]; then
-  sed -i '20 s/^#//' /mnt/etc/pacman.conf
+   sed -i '20 s/^#//' /mnt/etc/pacman.conf
   fi
 
   return $SUCCESS
@@ -2320,7 +2322,11 @@ main()
   check_uid
   check_boot_mode
   check_env
-
+  
+  setfont ter-114n || {
+    warn "Could not change font to Terminus";
+    printf "\n";
+  }
   # locale
   set_locale
   sleep_clear 0
@@ -2432,7 +2438,6 @@ main()
   return $SUCCESS
 }
 
-
 launch() {
   if [ -z $option ]; then
    main
@@ -2443,12 +2448,6 @@ launch() {
    $single_command
   fi
 }
-
-if [ "$1" = "--adv-option" ]; then
-  USE_ADV_ASK=$TRUE
-else
-  USE_ADV_ASK=$FALSE
-fi
 
 # we start here
 option="$1"
