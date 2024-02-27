@@ -1636,7 +1636,7 @@ setup_extra_packages()
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted'
    filemanager='thunar ark dolphin'
    media='ffmpeg yt-dlp mpv'
-   audio='alsa-utils pulseaudio pavucontrol'
+   audio='alsa-utils pulseaudio pipewirepavucontrol'
    hardware='amd-ucode intel-ucode'
    kernel='linux-headers'
    misc='acpi git haveged hdparm htop inotify-tools ipython irssi
@@ -1662,7 +1662,7 @@ setup_extra_packages()
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
    filemanager=''
    media=''
-   audio='alsa-utils pulseaudio'
+   audio='alsa-utils pulseaudio pipewire'
    hardware='amd-ucode intel-ucode'
    kernel='linux-headers'
    misc='acpi haveged hdparm htop inotify-tools irssi
