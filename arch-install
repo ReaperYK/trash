@@ -884,7 +884,6 @@ ask_partitions()
         wprintf "[?] EFI System partition: "
         read -r BOOT_PART
       done
-      BOOT_FS_TYPE="fat32"
     else
       while [ -z "$BOOT_PART" ]; do
         wprintf "[?] Boot partition: "
@@ -924,13 +923,6 @@ ask_partitions()
       LUKS=$FALSE
      fi
     fi
-    printf "\n\n[?] Overwrite data on partition [y/N]: "
-    read OVERWRITE_PARTITION
-     if [ "$OVERWRITE_PARTITION" = "y" ]; then
-      OVERWRITE_PARTITION=$TRUE
-     else
-      OVERWRITE_PARTITION=$FALSE
-     fi
 
 
     printf "\n\n"
@@ -1142,11 +1134,6 @@ make_boot_partition()
 # make and format partitions
 make_partitions()
 {
-  if [ "$OVERWRITE_PARTITION" = $TRUE ]; then
-  overwrite_partition
-  sleep_clear 1
-  fi
-
   make_boot_partition
   sleep_clear 1
 
