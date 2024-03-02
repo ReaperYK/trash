@@ -1620,7 +1620,7 @@ setup_extra_packages()
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted'
    filemanager='thunar ark dolphin'
    media='ffmpeg yt-dlp mpv'
-   audio='alsa-utils pulseaudio pipewirepavucontrol'
+   audio='alsa-utils pulseaudio pipewire pavucontrol'
    hardware='amd-ucode intel-ucode'
    kernel='linux-headers'
    misc='acpi git haveged hdparm htop inotify-tools ipython irssi
