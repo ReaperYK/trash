@@ -148,13 +148,10 @@ WLAN_PASSPHRASE=''
 BOOT_MODE=''
 
 # ascii art
-ASCII='https://raw.githubusercontent.com/ReaperYK/arch-installer/master/file/rinuaa3.txt'
+ASCII='https://raw.githubusercontent.com/ReaperYK/trash/main/rinuaa.txt'
 
 # activate advaneced ask (default=FALSE)
 USE_ADV_ASK=$FALSE
-
-# Linux LTS
-ASK_LTS_LINUX=$FALSE
 
 # activate /var /tmp /opt /srv /home
 USE_ADV_PART=$FALSE
@@ -1744,12 +1741,8 @@ setup_base_system()
   pass_mirror_conf # copy mirror list to chroot env
   
   if [ $USE_ADV_ASK = $TRUE ]; then
-   ask_linux_lts
-   sleep_clear 1
-    if [ $PDL != $TRUE ]; then
      ask_pacman_external_downloader
      sleep_clear 1
-    fi
   fi
 
   if [ "$PACMANDL" = "WGET" ]
