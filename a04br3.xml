@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <project name="Benesse-a04br3-development/android_kernel_Benesse_a04br3" path="kernel/lge/a04br3" remote="github" revision="lineage-16.0" />
+  <project name="Benesse-a04br3-development/android_kernel_Benesse_a04br3" path="kernel/lge/a04br3" remote="github" revision="lineage-18.0" />
 </manifest>
