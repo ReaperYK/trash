@@ -118,7 +118,7 @@ CHROOT='/mnt'
 NORMAL_USER=''
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirrors.archlinux32.org/i386/$repo/os/$arch'
+AR_REPO_URL='https://mirrors.archlinux32.org/i686/$repo/os/$arch'
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -339,7 +339,7 @@ check_env()
   
   if [ ! -e "/usr/bin/pacman" ];
   then
-    warn "You need to run this installer on an ArchLinux based OS that pacman can use! \n"
+    warn "/bin/pacman not found - You need to run this installer on an ArchLinux based OS that pacman can use! \n"
   fi
 
   return $SUCCESS
