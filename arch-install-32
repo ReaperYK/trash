@@ -1604,7 +1604,11 @@ setup_extra_packages()
   CTRL_C_PROTECT=$TRUE
 
   chroot $CHROOT pacman -Sy --needed --overwrite='*' --noconfirm $all \
-  || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; install_extra_packages; return $SUCCESS; }
+  || {
+     err "Installation failed. Later you will have to install it manually. The logs are located at /var/log/arch32.log.";
+     sleep 3;
+     chroot /mnt pacman -S --noconfim $all >> /mnt/var/log/arch32.log;
+   }
 
   CTRL_C_PROTECT=$FALSE
 
