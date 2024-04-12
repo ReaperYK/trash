@@ -258,7 +258,7 @@ err()
 banner()
 {
   columns="$(tput cols)"
-  str="--==[ Arch Linux Installer - ver $VERSION ]==--"
+  str="--==[ Arch Linux 32 Installer - ver $VERSION ]==--"
 
   printf "${BLUEB}%*s${NC}\n" "${COLUMNS:-$(tput cols)}" | tr ' ' '-'
 
