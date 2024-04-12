@@ -118,7 +118,9 @@ CHROOT='/mnt'
 NORMAL_USER=''
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirrors.archlinux32.org/i686/$repo/os/$arch'
+AR_REPO_URL='https://mirrors.archlinux32.org/$repo/$arch'
+AR_REPO_URL2='https://de.mirror.archlinux32.org/$repo/$arch'
+AR_REPO_URL3='https://mirror.clarkson.edu/archlinux32/$arch/$repo'
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -402,9 +404,6 @@ set_locale()
     sleep 1
     LOCALE='ja_JP.UTF-8'
   fi
-
-  localectl set-locale "LANG=$LOCALE"
-  check $? 'setting locale'
 
   return $SUCCESS
 }
