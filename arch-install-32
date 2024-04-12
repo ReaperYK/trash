@@ -118,9 +118,7 @@ CHROOT='/mnt'
 NORMAL_USER=''
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirrors.archlinux32.org/$arch/$repo'
-AR_REPO_URL2='https://de.mirror.archlinux32.org/$arch/$repo'
-AR_REPO_URL3='https://mirror.clarkson.edu/archlinux32/$arch/$repo'
+AR_REPO_URL='https://mirror.clarkson.edu/archlinux32/$arch/$repo'
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -1265,13 +1263,7 @@ install_base_packages()
   warn 'This can take a while, please wait...'
   printf "\n\n"
   
-  if [ "$ASK_LTS_LINUX" = "y" ]; then
-   LINUX_PACKAGES="linux-lts"
-  else
-   LINUX_PACKAGES='linux'
-  fi
-  
-  pacstrap $CHROOT base base-devel btrfs-progs $LINUX_PACKAGES linux-firmware git \
+  pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
     terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout
   
   printf "\n"
@@ -1764,8 +1756,6 @@ setup_mirrorlist()
   printf1 'Setting up /etc/pacman.d/mirrorlist'
   printf "\n\n"
   echo "Server = $AR_REPO_URL" > /etc/pacman.d/mirrorlist
-  echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
-  echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
 }
 
 # pass correct config
