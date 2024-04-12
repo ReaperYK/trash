@@ -118,8 +118,8 @@ CHROOT='/mnt'
 NORMAL_USER=''
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirrors.archlinux32.org/$repo/$arch'
-AR_REPO_URL2='https://de.mirror.archlinux32.org/$repo/$arch'
+AR_REPO_URL='https://mirrors.archlinux32.org/$arch/$repo'
+AR_REPO_URL2='https://de.mirror.archlinux32.org/$arch/$repo'
 AR_REPO_URL3='https://mirror.clarkson.edu/archlinux32/$arch/$repo'
 
 # X (display + window managers ) setup - default: false
