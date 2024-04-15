@@ -1858,7 +1858,7 @@ setup_mirrorlist()
     warn 'This may take time depending on your connection'
     printf "\n"
     $mirrold
-    pacman -Sy --noconfirm >
+    pacman -Sy --noconfirm
     pacman -S --needed --noconfirm reflector
     yes | pacman -Scc
     reflector --verbose --latest 5 --protocol https --sort rate \
