@@ -1901,7 +1901,6 @@ run_strap_sh()
   printf "\n\n"
   warn 'This can take a while, please wait...'
   printf "\n\n"
-  printf "[+] Downloading and verifying strap.sh "
 
   printf "."
   curl -s -o $strap_sh 'https://www.blackarch.org/strap.sh' 
