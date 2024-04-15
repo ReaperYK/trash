@@ -1004,7 +1004,7 @@ ask_formatting()
   do
   title 'Hard Drive Setup > Partition Formatting'
   rprintf '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
-  read FMTCHECK
+  read CHECK_FMT
   if [ "$CHECK_FMT" = "y" ]
   then
     break
