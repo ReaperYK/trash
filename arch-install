@@ -953,7 +953,17 @@ make_partition() {
   fi
 
   # root partition
+  if [ $LUKS = $TRUE ]
+  then
+    make_luks_partition "$ROOT_PART"
+    sleep_clear 1
+    open_luks_partition "$ROOT_PART" "$CRYPT_ROOT"
+    sleep_clear 1
+    formatter "/dev/mapper/$CRYPT_ROOT" "$ROOT_PART_FS"
+    sleep_clear 1
+  else
   formatter "$ROOT_PART" "$ROOT_PART_FS"
+  fi
 
   return $SUCCESS
 }
@@ -977,8 +987,10 @@ formatter() {
   title "Hard Drive Setup > Partition Formatting"
   wprintf "[+] Formatting $target_partition"
   printf "\n\n"
-  $format_command $target_partition
-  
+
+  $format_command $target_partition ||
+    { err 'Could not create filesystem'; exit $FAILURE; }
+
   sleep_clear 1
   return $SUCCESS
 }
@@ -986,12 +998,12 @@ formatter() {
 # ask user and get confirmation for formatting
 ask_formatting()
 {
-  while [ "$FMTCHECK" != "y" ]
+  while [ "$CHECK_FMT" != "y" ]
   do
   title 'Hard Drive Setup > Partition Formatting'
   rprintf '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
   read FMTCHECK
-  if [ "$FMTCHECK" = "y" ]
+  if [ "$CHECK_FMT" = "y" ]
   then
     break
   else
@@ -1146,35 +1158,6 @@ mount_filesystems()
     swapon $SWAP_PART 
   fi
 
-  if [ "$USE_ADV_PART" = "$TRUE" ]
-  then
-  if [ -n "$VAR_PART" ]; then
-   mkdir "$CHROOT/var"
-   mount "$VAR_PART" "$CHROOT/var" ||
-   { err "Error mounting var partition, leaving."; exit $FAILURE; }
-  fi
-  if [ -n "$OPT_PART" ]; then
-   mkdir "$CHROOT/opt"
-   mount "$OPT_PART" "$CHROOT/opt" ||
-   { err "Error mounting opt partition, leaving."; exit $FAILURE; }
-  fi
-  if [ -n "$TMP_PART" ]; then
-   mkdir "$CHROOT/tmp"
-   mount "$TMP_PART" "$CHROOT/tmp" ||
-   { err "Error mounting tmp partition, leaving."; exit $FAILURE; }
-  fi
-  if [ -n "$SRV_PART" ]; then
-   mkdir "$CHROOT/srv"
-   mount "$SRV_PART" "$CHROOT/srv" ||
-   { err "Error mounting srv partition, leaving."; exit $FAILURE; }
-  fi
-  if [ -n "$HOME_PART" ]; then
-   mkdir "$CHROOT/home"
-   mount "$HOME_PART" "$CHROOT/home" ||
-   { err "Error mounting home partition, leaving."; exit $FAILURE; }
-  fi
-  fi
-
   return $SUCCESS
 }
 
@@ -1237,7 +1220,8 @@ install_base_packages()
   printf "\n\n"
   
   pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
-    terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout
+    terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
+   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
   
   printf "\n"
   printf1 'Updating pacman database'
@@ -1305,9 +1289,16 @@ setup_time()
     then
 	    timezone='Asia/Tokyo'
     else
-	    timedatectl list-timezones
-      printf "\n\n [?] Enter time zone: "
-      read timezone
+      printf "[?] Default = UTC. Show list and select other time zone? [y/n]: "
+      read -r manual_set_timezone
+      if [ "$manual_set_timezone" = "y" ]; then
+	     printf "\n"
+       timedatectl list-timezones
+       printf "\n\n [?] Enter time zone: "
+       read timezone
+      else
+       timezone="UTC"
+      fi    
     fi
     
     if [ -z "$timezone" ]
@@ -1318,7 +1309,7 @@ setup_time()
     fi
 
   printf "\n\n"
-  chroot $CHROOT ln -sf "/usr/share/zoneinfo/$timezone" /etc/localtime \
+  chroot $CHROOT ln -sf "/usr/share/zoneinfo/$timezone" /etc/localtime
 
   return $SUCCESS
 
@@ -1414,12 +1405,10 @@ setup_bootloader()
 
   if [ "$BOOT_MODE" = 'uefi' ] && [ "$PART_LABEL" = 'gpt' ]
   then
-    printf1 'Setting up EFI boot loader'
+    printf1 'Setting up GRUB (EFI) boot loader'
     printf "\n\n"
 
     uuid="$(lsblk -o UUID "$ROOT_PART" | sed -n 2p)"
-
-    chroot $CHROOT pacman -S grub os-prober --noconfirm --overwrite='*' --needed
 
     if [ $LUKS = $TRUE ]
     then
@@ -1440,8 +1429,6 @@ setup_bootloader()
     printf "\n\n"
 
     uuid="$(lsblk -o UUID "$ROOT_PART" | sed -n 2p)"
-
-    chroot $CHROOT pacman -S grub os-prober --noconfirm --overwrite='*' --needed
 
     if [ $LUKS = $TRUE ]
     then
@@ -1560,7 +1547,7 @@ setup_extra_packages()
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
    unzip upower usb_modeswitch usbutils zip fcitx5-im fcitx5-mozc python 
-   jre-openjdk docker kotlin ruby cmake curl dkms python-pip'
+   jre-openjdk docker kotlin ruby cmake curl dkms python-pip os-prober grub'
    fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji noto-fonts-emoji noto-fonts noto-fonts-cjk noto-fonts-extra'
    network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd dialog
    dnscrypt-proxy dnsmasq dnsutils fwbuilder iw networkmanager
@@ -1584,7 +1571,7 @@ setup_extra_packages()
    kernel='linux-headers'
    misc='acpi haveged hdparm htop inotify-tools irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   screen smartmontools strace tmux udisks2 unace unrar
+   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
    unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
    fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
    network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
