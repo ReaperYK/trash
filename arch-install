@@ -173,6 +173,8 @@ else
   USE_ADV_ASK=$FALSE
 fi
 
+LW_EXT_PACK=""
+
 ctrl_c() {
   if [ $CTRL_C_PROTECT != "$TRUE" ]; then
     printf "\n"
@@ -1521,14 +1523,8 @@ reinitialize_keyring()
 # install extra (missing) packages
 setup_extra_packages()
 {
-  if [ "$USE_ADV_ASK" = "$TRUE" ]; then
-   title "Base System Setup > Extra Packages > Package Group"
-   wprintf '[?] Use lightweight package groups (download size 1GB => 500MB or less) [y/n]: '
-   read LIGHTWEIGHT_PACKAGES_GROUP
-    if [ "$LIGHTWEIGHT_PACKAGES_GROUP" = "y" ]; then
+  if [ "$LW_EXT_PACK" = "$TRUE" ]; then
      LIGHTWEIGHT_PACKAGES_GROUP=$TRUE
-    fi
-   sleep_clear 1
   fi
 
   if [ "$LIGHTWEIGHT_PACKAGES_GROUP" != "$TRUE" ]; then
@@ -1902,18 +1898,14 @@ run_strap_sh()
   warn 'This can take a while, please wait...'
   printf "\n\n"
 
-  printf "."
   curl -s -o $strap_sh 'https://www.blackarch.org/strap.sh' 
   sha1="$(sha1sum $strap_sh | awk '{print $1}')"
 
-  printf "."
   printf '[blackarch]\nServer = %s\n' "$BA_REPO_URL" \
     >> "$CHROOT/etc/pacman.conf"
-  printf "."
 
   if [ "$sha1" = "$orig_sha1" ]
   then
-    printf "."
     printf "\n\n"
     mv $strap_sh "${CHROOT}${strap_sh}"
     chmod a+x "${CHROOT}${strap_sh}"
@@ -1953,7 +1945,7 @@ fi
 }
 
 ask_de_setup() {
-  title "Arch Linux Setup > GNOME / KDE Plasma"
+  title "Arch Linux Setup > Desktop Envrionment"
   printf "[?] Setup desktop environment [y/n]: "
   read ASK_DE
   
@@ -1972,7 +1964,8 @@ setup_de()
   printf "
   1. KDE Plasma
   2. GNOME
-  3. Xfce4 \n\n"
+  3. Xfce4
+  4. LXDE \n\n"
   printf "[?] Choose [default=2]: "
   read choose_de
 
@@ -1991,6 +1984,11 @@ setup_de()
 	DE_EXTPKG='gnome-keyring xfce4-goodies spectacle'
 	DE_MAN='sddm'
   DE_TITLE='Xfce4'
+  elif [ $choose_de = 4 ]; then
+  DE_MAIN='lxde'
+	DE_EXTPKG='lxde-common lxsession openbox spectacle'
+	DE_MAN='lxdm'
+  DE_TITLE='LXDE'
   elif [ -z $choose_de ]; then
   DE_MAIN='plasma'
 	DE_EXTPKG='kde-applications spectacle'
@@ -2214,7 +2212,7 @@ update_package()
   title "Game Over"
   printf1 "Updating packages"
   printf "\n\n"
-  chroot /mnt pacman -Syyu --noconfirm --disable-download-timeout --overwrite="*"
+  chroot /mnt pacman -Syu --noconfirm --disable-download-timeout --overwrite="*"
 
   return $SUCCESS
 }
