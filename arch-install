@@ -1873,7 +1873,7 @@ setup_mirrorlist()
     echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
     
     echo -e "## Japan\n\n" \
-      > /etc/pacman.d/mirrorlist
+      >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
   fi
 }
