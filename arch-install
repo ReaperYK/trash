@@ -1539,11 +1539,9 @@ setup_extra_packages()
    title "Base System Setup > Extra Packages > Package Group"
    wprintf '[?] Use lightweight package groups (download size 1GB => 500MB or less) [y/n]: '
    read LIGHTWEIGHT_PACKAGES_GROUP
-
     if [ "$LIGHTWEIGHT_PACKAGES_GROUP" = "y" ]; then
      LIGHTWEIGHT_PACKAGES_GROUP=$TRUE
     fi
-
    sleep_clear 1
   fi
 
