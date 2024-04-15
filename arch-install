@@ -1851,12 +1851,33 @@ ask_mirror()
 
 setup_mirrorlist()
 {
-  title 'Pacman Setup > Mirrorlist'
-  printf1 'Setting up /etc/pacman.d/mirrorlist'
-  printf "\n\n"
-  echo "Server = $AR_REPO_URL" > /etc/pacman.d/mirrorlist
-  echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
-  echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
+   local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
+
+  if confirm 'Pacman Setup > ArchLinux Mirrorlist' \
+    "[+] Worldwide mirror will be used\n\n[?] Look for the best server [y/n]: "
+  then
+    printf "\n"
+    warn 'This may take time depending on your connection'
+    printf "\n"
+    $mirrold
+    pacman -Sy --noconfirm > $VERBOSE 2>&1
+    pacman -S --needed --noconfirm reflector > $VERBOSE 2>&1
+    yes | pacman -Scc > $VERBOSE 2>&1
+    reflector --verbose --latest 5 --protocol https --sort rate \
+      --save /etc/pacman.d/mirrorlist > $VERBOSE 2>&1
+  else
+    printf "\n"
+    warn 'Using Worldwide mirror server'
+    $mirrold
+    echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
+      > /etc/pacman.d/mirrorlist
+    echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
+    echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
+    
+    echo -e "## Japan\n\n" \
+      > /etc/pacman.d/mirrorlist
+    echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
+  fi
 }
 
 # pass correct config
