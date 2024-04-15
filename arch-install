@@ -887,8 +887,6 @@ ask_partitions()
         wprintf "[?] EFI System partition: "
         read -r BOOT_PART
         printf "\n"
-        wprintf "[?] File System type (ext4,ext3,ext2,btrfs,empty to default): "
-        read -r BOOT_PART_FS
       done
     else
       while [ -z "$BOOT_PART" ]; do
@@ -899,6 +897,7 @@ ask_partitions()
         read -r BOOT_PART_FS
       done
     fi
+    printf "\n"
     while [ -z "$ROOT_PART" ]; do
       wprintf "[?] Root partition: "
       read -r ROOT_PART
@@ -908,9 +907,11 @@ ask_partitions()
     done
     wprintf "[?] Swap partition (empty for none): "
     read -r SWAP_PART
+    printf "\n"
 
     wprintf "[?] activate LUKS [y/n]: "
     read -r ASK_LUKS
+    
     if [ "$ASK_LUKS" = "y" ] && [ "$ASK_LUKS" ]; then
      LUKS=$TRUE
     else
@@ -945,7 +946,7 @@ make_partition() {
    title 'Hard Drive Setup > Partition Formatting'
    wprintf '[+] Creating EFI System Partition'
    printf "\n\n"
-   mkfs.vfat -v -c -F 32 $target_partition
+   mkfs.vfat -F 32 $target_partition
    sleep_clear 1
   else
    formatter "$BOOT_PART" "$BOOT_PART_FS" # boot partiton (MBR)
@@ -966,9 +967,9 @@ formatter() {
   elif [ "$target_filesystem" = "btrfs" ]; then
    format_command='mkfs.btrfs -f'
   elif [ "$target_filesystem" = "ext2" ]; then
-   format_command='mkfs.ext2 -F'
+   format_command='mkfs.ext2 -F -m 0'
   elif [ "$target_filesystem" = "ext3" ]; then
-   format_command='mkfs.ext3 -F'
+   format_command='mkfs.ext3 -F -m 0'
   else
    format_command='mkfs.ext4 -m 0 -O ^64bit -F'
   fi
@@ -1225,14 +1226,6 @@ check_space()
   return $SUCCESS
 }
 
-ask_linux_lts() {
-  title "Base System Setup > Linux kernel"
-  wprintf "[?] Use LTS Linux kernel [y/n] (default=n): "
-  read -r ASK_LTS_LINUX
-
-  return $SUCCESS
-}
-
 # install ArchLinux base and base-devel packages
 install_base_packages()
 {
@@ -1243,13 +1236,7 @@ install_base_packages()
   warn 'This can take a while, please wait...'
   printf "\n\n"
   
-  if [ "$ASK_LTS_LINUX" = "y" ]; then
-   LINUX_PACKAGES="linux-lts"
-  else
-   LINUX_PACKAGES='linux'
-  fi
-  
-  pacstrap $CHROOT base base-devel btrfs-progs $LINUX_PACKAGES linux-firmware git \
+  pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
     terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout
   
   printf "\n"
