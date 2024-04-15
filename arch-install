@@ -946,7 +946,7 @@ make_partition() {
    title 'Hard Drive Setup > Partition Formatting'
    wprintf '[+] Creating EFI System Partition'
    printf "\n\n"
-   mkfs.vfat -F 32 $target_partition
+   mkfs.vfat -F 32 $BOOT_PART
    sleep_clear 1
   else
    formatter "$BOOT_PART" "$BOOT_PART_FS" # boot partiton (MBR)
