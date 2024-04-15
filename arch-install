@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 ################################################################################
-#                                                                                        #
-# arch-installer - Unofficial Installer for Arch Linux                              # 
-#                                                                                        #
-# AUTHOR - ReaperYK                                                                    #
-#                                                                                        #
+#                                                                              #
+# arch-installer - Unofficial Installer for Arch Linux                         # 
+#                                                                              #
+# AUTHOR - noptrix / ReaperYK                                                  #
+#                                                                              #
 ################################################################################
 
 # version
@@ -122,8 +122,8 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 #BA_REPO_URL='https://blackarch.cs.nycu.edu.tw/$repo/os/$arch' # Taiwan
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
+AR_REPO_URL='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
+AR_REPO_URL2='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
 AR_REPO_URL3='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
 
 # X (display + window managers ) setup - default: false
@@ -883,58 +883,34 @@ ask_partitions()
       while [ -z "$BOOT_PART" ]; do
         wprintf "[?] EFI System partition: "
         read -r BOOT_PART
+        printf "\n"
+        wprintf "[?] File System type (ext4,ext3,ext2,btrfs,empty to default): "
+        read -r BOOT_PART_FS
       done
     else
       while [ -z "$BOOT_PART" ]; do
         wprintf "[?] Boot partition: "
         read -r BOOT_PART
+        printf "\n"
+        wprintf "[?] File System type (ext4,ext3,ext2,btrfs,empty to default): "
+        read -r BOOT_PART_FS
       done
     fi
     while [ -z "$ROOT_PART" ]; do
       wprintf "[?] Root partition: "
       read -r ROOT_PART
+      printf "\n"
+      wprintf "[?] File System type (ext4,ext3,ext2,btrfs,empty to default): "
+      read -r ROOT_PART_FS
     done
     wprintf "[?] Swap partition (empty for none): "
     read -r SWAP_PART
 
-    printf "\n\n[?] Separate /var, /opt, /tmp, /home, /srv partitions [y/n]: "
-    read SEP_PART
-    if [ "$SEP_PART" = "y" ]
-    then
-    USE_ADV_PART=$TRUE
-    LUKS=$FALSE
-    printf '\n[?] /var parition (none=empty): '
-    read VAR_PART
-    printf '\n[?] /opt partition (none=empty): '
-    read OPT_PART
-    printf '\n[?] /tmp partition (none=empty): '
-    read TMP_PART
-    printf '\n[?] /srv partition (none=empty): '
-    read SRV_PART
-    printf '\n[?] /home partition (none=empty): '
-    read HOME_PART    
-    else
-     printf "\n[?] Full encrypted root [Y/n]: "
-     read ADV_LUKS
-     if [ "$ADV_LUKS" = "y" ]
-     then
-      LUKS=$TRUE
-     else
-      LUKS=$FALSE
-     fi
-    fi
-
-
     printf "\n\n"
     printf1 "Selected partition: \n\n"
-    printf1 "Boot partition => $BOOT_PART \n"
-    printf1 "Root partition => $ROOT_PART \n"
-    printf1 "Swap partition => $SWAP_PART \n"
-    printf1 "Var partition => $VAR_PART \n"
-    printf1 "Opt partition => $OPT_PART \n"
-    printf1 "Tmp partition => $TMP_PART \n"
-    printf1 "Srv partition => $SRV_PART \n"
-    printf1 "Home partition => $HOME_PART \n\n\n"
+    wprintf "Boot partition => $BOOT_PART \n"
+    wprintf "Root partition => $ROOT_PART \n"
+    wprintf "Swap partition => $SWAP_PART \n"
     
     printf1 "Are you sure you want to specify the partition [y/n]: "
     read FINCHECK 
@@ -950,35 +926,48 @@ ask_partitions()
   return $SUCCESS
 }
 
-fmt_adv_part()
-{
-  title 'Hard Drive Setup > Advanced partition'
-  printf1 'Formatting partition \n'
-  if [ -n "$VAR_PART" ]; then
-   printf1 'Formatting /var \n'
-   mkfs.ext4 -F $VAR_PART ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
+make_partition() {
+  if [ "$BOOT_MODE" = 'uefi' ]  && [ "$PART_LABEL" = 'gpt' ]
+  then
+  # boot partiton (UEFI)
+   title 'Hard Drive Setup > Partition Formatting'
+   wprintf '[+] Creating EFI System Partition'
+   printf "\n\n"
+   mkfs.vfat -v -c -F 32 $target_partition
+   sleep_clear 1
+  else
+   formatter "$BOOT_PART" "$BOOT_PART_FS" # boot partiton (MBR)
   fi
-  if [ -n "$OPT_PART" ]; then
-   printf1 'Formatting /opt \n'
-   mkfs.ext4 -F $OPT_PART ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
+
+  # root partition
+  formatter "$ROOT_PART" "$ROOT_PART_FS"
+
+  return $SUCCESS
+}
+
+formatter() {
+  target_partition="$1"
+  target_filesystem="$2"
+  
+  if [ "$target_filesystem" = "ext4" ]; then
+   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
+  elif [ "$target_filesystem" = "btrfs" ]; then
+   format_command='mkfs.btrfs -f'
+  elif [ "$target_filesystem" = "ext2" ]; then
+   format_command='mkfs.ext2 -F'
+  elif [ "$target_filesystem" = "ext3" ]; then
+   format_command='mkfs.ext3 -F'
+  else
+   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
   fi
-  if [ -n "$TMP_PART" ]; then
-   printf1 'Formatting /tmp \n'
-   mkfs.ext4 -F $TMP_PART ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
-  fi
-  if [ -n "$SRV_PART" ]; then
-   printf1 'Formatting /srv \n'
-   mkfs.ext4 -F $SRV_PART ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
-  fi
-  if [ -n "$HOME_PART" ]; then
-   printf1 'Formatting /home \n'
-   mkfs.ext4 -F $HOME_PART ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
-  fi
+
+  title "Hard Drive Setup > Partition Formatting"
+  wprintf "[+] Formatting $target_partition"
+  printf "\n\n"
+  $format_command $target_partition
+  
+  sleep_clear 1
+  return $SUCCESS
 }
 
 # ask user and get confirmation for formatting
@@ -1043,42 +1032,6 @@ make_swap_partition()
 
 }
 
-overwrite_partition() {
-  title "Hard Drive Setup > Overwrite and erase partition"
-  printf1 "Erasing partition data"
-  printf "\n\n"
-  warn "This takes a very long time. Let's wait while eating sweets! \n"
-  warn "Skip this step with Ctrl+C."
-  printf "\n\n"
-  ctrl_c() {
-   warn "[+] Abort erasure. Data may not be completely erased."
-  }
-  printf "Deletion will begin after 10 seconds "
-  bar=0
-  while [ $bar -ne 10 ]
-  do
-    wprintf "."
-    sleep 1
-    bar=$((bar + 1))
-  done
-  printf "\n\n"
-
-  dd if=/dev/urandom bs=5MB status=progress of=$BOOT_PART
-  dd if=/dev/urandom bs=5MB status=progress of=$ROOT_PART
-  dd if=/dev/urandom bs=5MB status=progress of=$SWAP_PART
-  
-  ctrl_c() {
-    printf "\n"
-    err 'Installation canceled! leaving...'
-    printf "\n\n"
-    swapoff "$SWAP_PART" > /dev/null 2>&1
-    exit $FAILURE
-    }
-
-  return $SUCCESS
-
-}
-
 # make and format root partition
 make_root_partition()
 {
@@ -1134,22 +1087,13 @@ make_boot_partition()
 # make and format partitions
 make_partitions()
 {
-  make_boot_partition
-  sleep_clear 1
-
-  make_root_partition
+  make_partition
   sleep_clear 1
 
   if [ "$SWAP_PART" != "none" ]
   then
     make_swap_partition
     sleep_clear 1
-  fi
-
-  if [ "$USE_ADV_PART" = "$TRUE" ]
-  then
-   fmt_adv_part
-   sleep_clear 1
   fi
 
   return $SUCCESS
@@ -1474,27 +1418,24 @@ setup_bootloader()
     printf1 'Setting up EFI boot loader'
     printf "\n\n"
 
-    chroot $CHROOT bootctl install || 
-    { err "Could not install EFI bootloader. Try installing in Legacy BIOS mode."; exit $FAILURE; }
-    uuid="$(blkid "$ROOT_PART" | cut -d ' ' -f 2 | cut -d '"' -f 2)"
+    uuid="$(lsblk -o UUID "$ROOT_PART" | sed -n 2p)"
+
+    chroot $CHROOT pacman -S grub os-prober --noconfirm --overwrite='*' --needed
 
     if [ $LUKS = $TRUE ]
     then
-      cat >> "$CHROOT/boot/loader/entries/arch.conf" << EOF
-title   Arch Linux
-linux   /vmlinuz-linux
-initrd    /initramfs-linux.img
-options   cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT rw
-EOF
-
-    else
-      cat >> "$CHROOT/boot/loader/entries/arch.conf" << EOF
-title   Arch Linux
-linux   /vmlinuz-linux
-initrd    /initramfs-linux.img
-options   root=UUID=$uuid rw
-EOF
+      sed -i "s|loglevel=3 quiet|cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
+        "$CHROOT/etc/default/grub"
     fi
+
+    echo "GRUB_BACKGROUND=\"/boot/grub/splash.png\"" >> \
+      "$CHROOT/etc/default/grub"
+
+    sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
+    sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
+
+    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+    chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
   else
     printf1 'Setting up GRUB boot loader'
     printf "\n\n"
@@ -1515,12 +1456,7 @@ EOF
     sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
     sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
 
-    printf "\n" 
-    printf1 'Running "grub-install"\n\n'
     chroot $CHROOT grub-install --target=i386-pc --recheck "$HD_DEV" 
-
-    printf "\n"
-    printf1 'Running "grub-mkconfig"\n\n'
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
 
   fi
