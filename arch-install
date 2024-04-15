@@ -89,6 +89,7 @@ NAMESERVER=''
 
 # LUKS flag
 LUKS=''
+ASK_LUKS=""
 
 # avalable hard drive
 HD_DEVS=''
@@ -101,9 +102,11 @@ PART_LABEL=''
 
 # boot partition
 BOOT_PART=''
+BOOT_PART_FS=""
 
 # root partition
 ROOT_PART=''
+ROOT_PART_FS=""
 
 # crypted root
 CRYPT_ROOT='r00t'
@@ -906,12 +909,21 @@ ask_partitions()
     wprintf "[?] Swap partition (empty for none): "
     read -r SWAP_PART
 
+    wprintf "[?] activate LUKS [y/n]: "
+    read -r ASK_LUKS
+    if [ "$ASK_LUKS" = "y" ] && [ "$ASK_LUKS" ]; then
+     LUKS=$TRUE
+    else
+     LUKS=$FALSE
+    fi
+
     printf "\n\n"
     printf1 "Selected partition: \n\n"
     wprintf "Boot partition => $BOOT_PART \n"
     wprintf "Root partition => $ROOT_PART \n"
     wprintf "Swap partition => $SWAP_PART \n"
-    
+    printf "\n"
+
     printf1 "Are you sure you want to specify the partition [y/n]: "
     read FINCHECK 
 
