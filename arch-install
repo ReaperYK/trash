@@ -1423,6 +1423,7 @@ setup_bootloader()
 
     sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
     sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
+    echo
 
     chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
@@ -1440,6 +1441,7 @@ setup_bootloader()
 
     echo "GRUB_BACKGROUND=\"/boot/grub/splash.png\"" >> \
       "$CHROOT/etc/default/grub"
+    echo
 
     sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
     sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
