@@ -1858,11 +1858,11 @@ setup_mirrorlist()
     warn 'This may take time depending on your connection'
     printf "\n"
     $mirrold
-    pacman -Sy --noconfirm > $VERBOSE 2>&1
-    pacman -S --needed --noconfirm reflector > $VERBOSE 2>&1
-    yes | pacman -Scc > $VERBOSE 2>&1
+    pacman -Sy --noconfirm >
+    pacman -S --needed --noconfirm reflector
+    yes | pacman -Scc
     reflector --verbose --latest 5 --protocol https --sort rate \
-      --save /etc/pacman.d/mirrorlist > $VERBOSE 2>&1
+      --save /etc/pacman.d/mirrorlist
   else
     printf "\n"
     warn 'Using Worldwide mirror server'
@@ -1871,9 +1871,6 @@ setup_mirrorlist()
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
-    
-    echo -e "## Japan\n\n" \
-      >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
   fi
 }
