@@ -1942,11 +1942,9 @@ disable_sign_check()
 	      sed -i "s/Required DatabaseOptional/Never/" "/etc/pacman.conf"
         sed -i "s/LocalFileSigLevel/#LocalFileSigLevel/" "/etc/pacman.conf"
   elif [ "$1" = "2" ]; then  
-    printf "[+] Disabling signature check"
 	      sed -i "s/Required DatabaseOptional/Never/" "/mnt/etc/pacman.conf"
         sed -i "s/LocalFileSigLevel/#LocalFileSigLevel/" "/mnt/etc/pacman.conf"
 elif [ "$1" = "3" ]; then
-		printf "[+] Restoring default settings"
 	      sed -i "s/Never/Required DatabaseOptional/" "/mnt/etc/pacman.conf"
         sed -i "s/#LocalFileSigLevel/LocalFileSigLevel/" "/mnt/etc/pacman.conf"
 fi
