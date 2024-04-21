@@ -8,7 +8,7 @@
 ################################################################################
 
 # version
-VERSION='2.24.30'
+VERSION='2.24.31'
 
 # true / false
 TRUE=0
@@ -172,8 +172,6 @@ if [ "$1" = "--adv-option" ]; then
 else
   USE_ADV_ASK=$FALSE
 fi
-
-LW_EXT_PACK=""
 
 ctrl_c() {
   if [ $CTRL_C_PROTECT != "$TRUE" ]; then
@@ -2353,14 +2351,25 @@ main()
   return $SUCCESS
 }
 
+show_help() {
+  title "Help"
+  wprintf "[+] ArchLinux Easy Installer $VERSION"
+  printf "\n\n"
+  printf '
+simple run:
+~$ bash arch-install \n\n'
+  echo "
+[+] Setting environment variables:
+[+] Note: Yes=0, No=1
+LW_EXT_PACK=0/1 [Reduce the amount of additional packages,]"
+}
+
 launch() {
   if [ -z $option ]; then
    main
-  elif [ "$option" = "--adv-option" ]; then
-   main
-  else
-   single_command="$option"
-   $single_command
+  elif [ "$option" = "--help" ]; then
+   clear
+   show_help
   fi
 }
 
