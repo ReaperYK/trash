@@ -27,3 +27,4 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     PRIVATE_BUILD_DESC="himiko_kddi-user 9 GANGES2-2.0.0-KDDI-191122-0604 1 dev-keys"
 
 BUILD_FINGERPRINT := Sony/himiko_kddi/himiko_kddi:9/GANGES2-2.0.0-KDDI-191122-0604/1:user/dev-keys
+
