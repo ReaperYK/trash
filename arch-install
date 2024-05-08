@@ -2363,6 +2363,62 @@ simple run:
 [+] Note: Yes=0, No=1
 LW_EXT_PACK=0/1 [Reduce the amount of additional packages,]"
 }
+recovery_console() {
+  title 'Recovery Mode'
+  printf "\n
+  1. Install base packages (File system must already be mounted)
+  2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
+  3. Install extra packages"
+
+  printf "\n\n"
+  printf "[?] Enter number: "
+  read -r operation
+  echo
+
+  if [ "$operation" = "1" ]; then
+   pacstrap "/mnt" "base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2" --disable-download-timeout ||
+   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
+  elif [ "$operation" = "2" ]; then
+   mkdir -p "${CHROOT}/"{proc,sys,dev} 
+   mount -t proc proc "$CHROOT/proc" 
+   mount --rbind /sys "$CHROOT/sys" 
+   mount --make-rslave "$CHROOT/sys" 
+   mount --rbind /dev "$CHROOT/dev" 
+   mount --make-rslave "$CHROOT/dev" 
+  elif [ "$operation" = "3" ]; then
+   arch='arch-install-scripts pkgfile'
+   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
+   browser=''
+   editor='nano'
+   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
+   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
+   filemanager=''
+   media=''
+   audio='alsa-utils pulseaudio pipewire'
+   hardware='amd-ucode intel-ucode'
+   kernel='linux-headers'
+   misc='acpi haveged hdparm htop inotify-tools irssi
+   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
+   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
+   unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
+   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
+   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
+   dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
+   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
+   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
+   xorg='xf86-video-amdgpu xf86-video-ati xorg-xclock
+   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
+   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
+   xf86-video-voodoo'
+   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
+   all="$all $misc $network $xorg $audio $media $filemanager"
+   chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
+  fi
+
+  return $SUCCESS
+}
+
+
 
 launch() {
   if [ -z $option ]; then
@@ -2370,6 +2426,9 @@ launch() {
   elif [ "$option" = "--help" ]; then
    clear
    show_help
+  elif [ "$option" = "--recovery" ]; then
+   clear
+   recovery_console
   fi
 }
 
