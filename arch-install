@@ -2376,7 +2376,7 @@ recovery_console() {
   echo
 
   if [ "$operation" = "1" ]; then
-   pacstrap "/mnt" "base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2" --disable-download-timeout ||
+   pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
   elif [ "$operation" = "2" ]; then
    mkdir -p "${CHROOT}/"{proc,sys,dev} 
