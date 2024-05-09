@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 ################################################################################
 #                                                                              #
-# parabola-installer - BlackArch Installer mod                                     # 
+# parabola-installer - BlackArch Installer mod                                 # 
 #                                                                              #
 # AUTHOR - noptrix(original) / ReaperYK(mod)                                   #
 #                                                                              #
 ################################################################################
-s
+
 # versions
 VERSION='-.--.--'
 
