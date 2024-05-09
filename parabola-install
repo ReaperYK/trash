@@ -126,8 +126,8 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 
 # default ArchLinux repository URL
 AR_REPO_URL='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
-AR_REPO_URL2='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-AR_REPO_URL3='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+#AR_REPO_URL2='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
+#AR_REPO_URL3='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -1423,7 +1423,7 @@ setup_bootloader()
     sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
     echo
 
-    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="parabola" --recheck
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
   else
     printf1 'Setting up GRUB boot loader'
@@ -1514,7 +1514,7 @@ reinitialize_keyring()
   printf "\n\n"
   sleep 2
 
-  chroot $CHROOT pacman -Sy --overwrite='*' --noconfirm archlinux-keyring
+  chroot $CHROOT pacman -Sy --overwrite='*' --noconfirm parabola-keyring
     
 
   return $SUCCESS
@@ -1655,7 +1655,7 @@ setup_base_system()
   sleep_clear 1
 
   # hostname setup
-  HOST_NAME="arch-$NORMAL_USER"
+  HOST_NAME="parabola-$NORMAL_USER"
 
   setup_hostname
   sleep_clear 1
@@ -1810,28 +1810,12 @@ ask_mirror()
 setup_mirrorlist()
 {
    local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
-
-  if confirm 'Pacman Setup > ArchLinux Mirrorlist' \
-    "[+] Worldwide mirror will be used\n\n[?] Look for the best server [y/n]: "
-  then
-    printf "\n"
-    warn 'This may take time depending on your connection'
-    printf "\n"
-    $mirrold
-    pacman -Sy --noconfirm
-    pacman -S --needed --noconfirm reflector
-    yes | pacman -Scc
-    reflector --verbose --latest 5 --protocol https --sort rate \
-      --save /etc/pacman.d/mirrorlist
-  else
     printf "\n"
     warn 'Using Worldwide mirror server'
     $mirrold
-    echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
+    echo -e "## Parabola Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
-    echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
-    echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
   fi
 }
 
@@ -1876,7 +1860,7 @@ run_strap_sh()
   printf "\n"
   printf1 'Reinitializing keyrings'
 	printf "\n\n"
-	chroot $CHROOT pacman -Sy archlinux-keyring blackarch-keyring --noconfirm
+	chroot $CHROOT pacman -Sy parabola-keyring blackarch-keyring --noconfirm
 
   return $SUCCESS
 }
