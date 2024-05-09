@@ -125,9 +125,7 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 #BA_REPO_URL='https://blackarch.cs.nycu.edu.tw/$repo/os/$arch' # Taiwan
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
-#AR_REPO_URL2='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-#AR_REPO_URL3='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+AR_REPO_URL='http://mirrors.dotsrc.org/parabola/$repo/os/$arch' # Germany 
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
