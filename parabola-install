@@ -464,6 +464,37 @@ set_keymap()
   return $SUCCESS
 }
 
+enable_pacman_multilib()
+{
+  path="$1"
+
+  if [ "$path" = 'chroot' ]
+  then
+    path="$CHROOT"
+  else
+    path=""
+  fi
+
+  title 'Pacman Setup > Multilib'
+
+  if [ "$(uname -m)" = "x86_64" ]
+  then
+    printf1 'Enabling multilib support'
+    printf "\n\n"
+    if grep -q "#\[multilib\]" "$path/etc/pacman.conf"
+    then
+      # it exists but commented
+      sed -i '/\[multilib\]/{ s/^#//; n; s/^#//; }' "$path/etc/pacman.conf"
+    elif ! grep -q "\[multilib\]" "$path/etc/pacman.conf"
+    then
+      # it does not exist at all
+      printf "[multilib]\nInclude = /etc/pacman.d/mirrorlist\n" \
+        >> "$path/etc/pacman.conf"
+    fi
+  fi
+
+  return $SUCCESS
+}
 
 # enable color mode in pacman.conf
 enable_pacman_color()
@@ -504,6 +535,9 @@ update_pkg_database()
 # update pacman.conf and database
 update_pacman()
 {
+  enable_pacman_multilib
+  sleep_clear 1
+  
   enable_pacman_color
   sleep_clear 1
   
