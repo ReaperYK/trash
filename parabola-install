@@ -1588,11 +1588,6 @@ setup_extra_packages()
   return $SUCCESS
 }
 
-install_extra_packages(){
-
-
-}
-
 
 ask_pacman_external_downloader() {
   title "Pacman > External Downloader"
