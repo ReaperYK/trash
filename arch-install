@@ -2365,7 +2365,9 @@ LW_EXT_PACK=0/1 [Reduce the amount of additional packages,]"
 }
 recovery_console() {
   title 'Recovery Mode'
-  printf "\n
+  warn "This is used in case of problems or to test various functions."
+  printf "\n"
+  printf "
   1. Install base packages (File system must already be mounted)
   2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
   3. Install extra packages"
@@ -2376,8 +2378,12 @@ recovery_console() {
   echo
 
   if [ "$operation" = "1" ]; then
+   disable_sign_check 1 > /dev/null 2&>1
+   setup_resolvconf > /dev/null 2&>1
    pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
+   chroot /mnt pacman -Syy --noconfirm
+   setup_resolvconf > /dev/null 2&>1
   elif [ "$operation" = "2" ]; then
    mkdir -p "${CHROOT}/"{proc,sys,dev} 
    mount -t proc proc "$CHROOT/proc" 
