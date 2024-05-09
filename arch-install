@@ -1423,7 +1423,7 @@ setup_bootloader()
     sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
     echo
 
-    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub --recheck
+    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="archlinux" --recheck
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
   else
     printf1 'Setting up GRUB boot loader'
@@ -1584,12 +1584,7 @@ setup_extra_packages()
   all="$all $misc $network $xorg $audio $media $filemanager"
 
   sleep_clear 1
-  install_extra_packages
-
-  return $SUCCESS
-}
-
-install_extra_packages(){
+  
   title 'Base System Setup > Extra Packages'
   printf1 'Installing extra packages'
   printf "\n\n"
@@ -1615,15 +1610,10 @@ install_extra_packages(){
   printf "\n"
   sleep 1
 
-  CTRL_C_PROTECT=$TRUE
-
   chroot $CHROOT pacman -Sy --needed --overwrite='*' --noconfirm $all \
-  || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; install_extra_packages; return $SUCCESS; }
+  || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; setup_extra_packages; return $SUCCESS; }
 
-  CTRL_C_PROTECT=$FALSE
-  
   return $SUCCESS
-
 }
 
 
