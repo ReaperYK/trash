@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ################################################################################
 #                                                                              #
-# arch-installer - BlackArch Installer mod                                     # 
+# parabola-installer - BlackArch Installer mod                                     # 
 #                                                                              #
 # AUTHOR - noptrix(original) / ReaperYK(mod)                                   #
 #                                                                              #
@@ -1226,7 +1226,7 @@ install_base_packages()
     echo "nameserver 8.8.8.8" > $CHROOT/etc/resolv.conf
     chroot $CHROOT pacman -Syy --noconfirm --overwrite='*'
   }
-  
+
   chroot $CHROOT pacman -Syy --noconfirm
 
   return $SUCCESS
