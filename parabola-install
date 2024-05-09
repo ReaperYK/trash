@@ -537,7 +537,7 @@ update_pacman()
 {
   enable_pacman_multilib
   sleep_clear 1
-  
+
   enable_pacman_color
   sleep_clear 1
   
@@ -1221,7 +1221,13 @@ install_base_packages()
   printf "\n"
   printf1 'Updating pacman database'
   printf "\n\n"
-  chroot $CHROOT pacman -Syy --noconfirm --overwrite='*' 
+  chroot $CHROOT curl -s https://yahoo.com || {
+    warn "No network connection! Try modifying /etc/resolv.conf..."
+    echo "nameserver 8.8.8.8" > $CHROOT/etc/resolv.conf
+    chroot $CHROOT pacman -Syy --noconfirm --overwrite='*'
+  }
+  
+  chroot $CHROOT pacman -Syy --noconfirm
 
   return $SUCCESS
 }
@@ -2059,14 +2065,14 @@ setup_extrasystem()
    sleep_clear 1
   fi
 
-  ask_de_setup
-  sleep_clear 1
+  #ask_de_setup
+  #sleep_clear 1
 
-  if [ "$DE_SETUP" = "$TRUE" ]
-  then
-	 setup_de
-	 sleep_clear 1
-  fi
+  #if [ "$DE_SETUP" = "$TRUE" ]
+  #then
+	# setup_de
+	# sleep_clear 1
+  #fi
 
   ask_vbox_setup
   sleep_clear 1
@@ -2174,10 +2180,6 @@ main()
   check_boot_mode
   check_env
   
-  setfont ter-114n || {
-    warn "Could not change font to Terminus";
-    printf "\n";
-  }
   # locale
   set_locale
   sleep_clear 0
