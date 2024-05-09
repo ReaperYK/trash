@@ -1779,7 +1779,6 @@ setup_mirrorlist()
     echo -e "## Parabola Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
-  fi
 }
 
 # pass correct config
