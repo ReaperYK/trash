@@ -1772,9 +1772,7 @@ ask_mirror()
 
 setup_mirrorlist()
 {
-   local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
-    printf "\n"
-    warn 'Using Worldwide mirror server'
+    local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
     $mirrold
     echo -e "## Parabola Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
