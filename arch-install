@@ -166,7 +166,10 @@ LIGHTWEIGHT_PACKAGES_GROUP=$FALSE
 
 ASK_BLACKARCH_SETUP=""
 
+operation=""
+
 BLACKARCH_SETUP=$FALSE
+
 if [ "$1" = "--adv-option" ]; then
   USE_ADV_ASK=$TRUE
 else
@@ -290,6 +293,8 @@ check_boot_mode()
   efivars=$(ls /sys/firmware/efi/efivars > /dev/null 2>&1; echo $?)
   if [ "$efivars" -eq "0" ]
   then
+     BOOT_MODE="uefi"
+  elif [ $FORCE_UEFI = "$TRUE" ]; then
      BOOT_MODE="uefi"
   fi
 
@@ -862,7 +867,11 @@ done
 # get partition label
 get_partition_label()
 {
-  PART_LABEL="$(fdisk -l "$HD_DEV" |grep "Disklabel" | awk '{print $3;}')"
+  if [ "$FORCE_UEFI" = "$TRUE" ]; then
+   PART_LAVEL="gpt"
+  else
+   PART_LABEL="$(fdisk -l "$HD_DEV" | grep "Disklabel" | awk '{print $3;}')"
+  fi
 
   return $SUCCESS
 }
@@ -2354,13 +2363,17 @@ simple run:
 LW_EXT_PACK=0/1 [Reduce the amount of additional packages,]"
 }
 recovery_console() {
+  while [ "operation" != "exit" ];
+  do
   title 'Recovery Mode'
   warn "This is used in case of problems or to test various functions."
   printf "\n"
   printf "
   1. Install base packages (File system must already be mounted)
   2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
-  3. Install extra packages"
+  3. Install extra packages
+  4. Enable lightweight additional packages
+  5. Force UEFI mode enabled"
 
   printf "\n\n"
   printf "[?] Enter number: "
@@ -2369,7 +2382,6 @@ recovery_console() {
 
   if [ "$operation" = "1" ]; then
    disable_sign_check 1
-   sleep_clear 1
    setup_resolvconf
    pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
@@ -2410,7 +2422,12 @@ recovery_console() {
    all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
    all="$all $misc $network $xorg $audio $media $filemanager"
    chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
+   elif [ "$operation" = "4" ]; then
+    export LW_EXT_PACK=$TRUE
+   elif [ "$operation" = "5" ]; then
+    export FORCE_UEFI=$TRUE
   fi
+  done
 
   return $SUCCESS
 }
@@ -2423,7 +2440,7 @@ launch() {
   elif [ "$option" = "--help" ]; then
    clear
    show_help
-  elif [ "$option" = "--recovery" ]; then
+  elif [ "$option" = "--console" ]; then
    clear
    recovery_console
   fi
