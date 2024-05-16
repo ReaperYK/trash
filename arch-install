@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 ################################################################################
-#                     l;lii                                                         #
-# arch-instaghhller - BlackArch Installerのmod                                    # 
-#                                                                              #
-# AUTHOR - noptrix(original) / ReaperYK(mod)                                   #
-#                                                                              #
+#                                                                                                                                                                                                                                        #
+# arch-installer - BlackArch Installer mod                                                                                                                                                        # 
+#                                                                                                                                                                                                                                        #
+# AUTHOR - noptrix(original) / ReaperYK(mod)                                                                                                                                              #
+#                                                                                                                                                                                                                                         #
 ################################################################################
 
 # version
@@ -125,9 +125,10 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 #BA_REPO_URL='https://blackarch.cs.nycu.edu.tw/$repo/os/$arch' # Taiwan
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
-AR_REPO_URL2='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-AR_REPO_URL3='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+AR_REPO_URL='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
+AR_REPO_URL3='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
+
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -2354,16 +2355,10 @@ show_help() {
   title "Help"
   wprintf "[+] ArchLinux Easy Installer $VERSION"
   printf "\n\n"
-  printf '
-simple run:
-~$ bash arch-install \n\n'
-  echo "
-[+] Setting environment variables:
-[+] Note: Yes=0, No=1
-LW_EXT_PACK=0/1 [Reduce the amount of additional packages,]"
 }
+
 recovery_console() {
-  while [ "operation" != "exit" ];
+  while [ "$operation" != "exit" ]; 
   do
   title 'Recovery Mode'
   warn "This is used in case of problems or to test various functions."
@@ -2373,10 +2368,11 @@ recovery_console() {
   2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
   3. Install extra packages
   4. Enable lightweight additional packages
-  5. Force UEFI mode enabled"
+  5. Enable Force UEFI mode
+  6. Delete EFI information and grub recorded at the beginning of the drive"
 
   printf "\n\n"
-  printf "[?] Enter number: "
+  printf "[?] Enter number [exit]: "
   read -r operation
   echo
 
@@ -2386,7 +2382,7 @@ recovery_console() {
    pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
    chroot /mnt pacman -Syy --noconfirm
-   setup_resolvconf > /dev/null 2&>1
+   setup_resolvconf
   elif [ "$operation" = "2" ]; then
    mkdir -p "${CHROOT}/"{proc,sys,dev} 
    mount -t proc proc "$CHROOT/proc" 
@@ -2426,6 +2422,12 @@ recovery_console() {
     export LW_EXT_PACK=$TRUE
    elif [ "$operation" = "5" ]; then
     export FORCE_UEFI=$TRUE
+   elif [ "$operation" = "6" ]; then
+    echo
+    warn "This operation will destroy the disk's data and partition table"
+    echo "[?] Enter drive name [example: /dev/sda]: "
+    read -r erase_disk_device
+    dd if="/dev/zero" of="$erase_disk_device" count=300 bs=3MB status=progress
   fi
   done
 
