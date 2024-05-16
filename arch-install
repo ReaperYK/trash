@@ -2419,9 +2419,11 @@ recovery_console() {
    all="$all $misc $network $xorg $audio $media $filemanager"
    chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
    elif [ "$operation" = "4" ]; then
-    export LW_EXT_PACK=$TRUE
+    LW_EXT_PACK=$TRUE
+    main
    elif [ "$operation" = "5" ]; then
-    export FORCE_UEFI=$TRUE
+    FORCE_UEFI=$TRUE
+    main
    elif [ "$operation" = "6" ]; then
     echo
     warn "This operation will destroy the disk's data and partition table"
