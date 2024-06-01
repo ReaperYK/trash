@@ -840,11 +840,7 @@ done
 # get partition label
 get_partition_label()
 {
-  if [ "$FORCE_UEFI" = "$TRUE" ]; then
-   PART_LAVEL="gpt"
-  else
    PART_LABEL="$(fdisk -l "$HD_DEV" | grep "Disklabel" | awk '{print $3;}')"
-  fi
 
   return $SUCCESS
 }
@@ -1313,7 +1309,7 @@ setup_hostname()
 }
 
 
-# setup boot loader for UEFI/GPT or BIOS/MBR
+# setup boot loader for MBR
 setup_bootloader()
 {
   title 'Base System Setup > Boot Loader'
