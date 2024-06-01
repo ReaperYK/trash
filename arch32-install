@@ -1293,7 +1293,7 @@ setup_proc_sys_dev()
 
   return $SUCCESS
 }
-
+ 
 
 # setup hostname
 setup_hostname()
