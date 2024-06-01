@@ -261,7 +261,7 @@ err()
 banner()
 {
   columns="$(tput cols)"
-  str="--==[ Arch Linux Installer - ver $VERSION ]==--"
+  str="--==[ Arch Linux32 Installer - ver $VERSION ]==--"
 
   printf "${BLUEB}%*s${NC}\n" "${COLUMNS:-$(tput cols)}" | tr ' ' '-'
 
@@ -1984,7 +1984,7 @@ easter_backdoor()
   bar=0
 
   title 'Game Over'
-  wprintf "[+] Arch Linux installation successfull!"
+  wprintf "[+] Arch Linux32 installation successfull!"
 
   printf "\n\n"
   wprintf 'Yo n00b, b4ckd00r1ng y0ur sy5t3m n0w '
