@@ -1416,7 +1416,7 @@ setup_extra_packages()
    filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
    filemanager=''
-   media=''
+   media='mplayer'
    audio='alsa-utils pulseaudio pipewire'
    hardware='amd-ucode intel-ucode'
    kernel=''
