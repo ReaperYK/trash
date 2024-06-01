@@ -1417,7 +1417,7 @@ setup_extra_packages()
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
    filemanager=''
    media='mplayer'
-   audio='alsa-utils pulseaudio pipewire'
+   audio='alsa-utils pulseaudio'
    hardware='amd-ucode intel-ucode'
    kernel=''
    misc='acpi haveged hdparm htop inotify-tools irssi
