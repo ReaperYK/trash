@@ -1144,7 +1144,7 @@ setup_resolvconf()
   then
    echo "nameserver 8.8.8.8" >> /mnt/etc/resolv.conf
    chroot /mnt curl -s $ASCII || {
-    err "No network connection. Aborting"
+    err "No network connection. Aborting"; }
     exit $FAILURE
   fi
   
