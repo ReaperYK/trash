@@ -1956,18 +1956,6 @@ setup_extrasystem()
   enable_iwd_networkmanager
   sleep_clear 1
 
-  ask_de_setup
-  sleep_clear 1
-
-  if [ "$DE_SETUP" = "$TRUE" ]
-  then
-	 setup_de
-	 sleep_clear 1
-  fi
-
-  ask_vbox_setup
-  sleep_clear 1
-
   if [ $VBOX_SETUP -eq $TRUE ]
   then
     setup_vbox_utils
