@@ -1423,7 +1423,7 @@ setup_extra_packages()
    media=''
    audio='alsa-utils pulseaudio pipewire'
    hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
+   kernel=''
    misc='acpi haveged hdparm htop inotify-tools irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    screen smartmontools strace tmux udisks2 unace unrar grub os-prober
