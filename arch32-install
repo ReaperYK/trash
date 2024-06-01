@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
-################################################################################
-#                                                                                                                                                                                                                                        #
-# arch-installer - BlackArch Installer mod                                                                                                                                                        # 
-#                                                                                                                                                                                                                                        #
-# AUTHOR - noptrix(original) / ReaperYK(mod)                                                                                                                                              #
-#                                                                                                                                                                                                                                         #
-################################################################################
+# ArchLinux 32bit Installer
+# You must be using an Archlinux32 LiveCD for this script to run successfully.
 
 # version
 VERSION='2.24.40'
@@ -1560,12 +1555,12 @@ else
   pacman_pdl_setup chroot
   sleep_clear 1
   
+  disable_sign_check 2
+  sleep_clear 1
+  
   reinitialize_keyring
   sleep_clear 1
   
-  disable_sign_check 2
-  sleep_clear 1
-
   setup_extra_packages
   sleep_clear 1
 
@@ -1626,64 +1621,6 @@ setup_im()
   return $SUCCESS
 }
 
-ask_blackarch_mirror_setup()
-{
-  title "ArchLinux Setup > BlackArch Mirror / keyring Setup"
-  wprintf '[?] Setup BlackArch keyring and mirror server [y/n] [If you are not sure, press "n"]: '
-  read ASK_BLACKARCH_SETUP
-
-  if [ "$ASK_BLACKARCH_SETUP" = "y" ]; then
-   BLACKARCH_SETUP=$TRUE
-  fi
-
-  return 0
-}
-
-# ask for BlackArch Linux lmirror
-ask_mirror()
-{
-  title "BlackArch Linux Setup > Arch Linux Mirror"
-
-  local IFS='|'
-  count=1
-  mirror_url='https://raw.githubusercontent.com/BlackArch/blackarch/master/mirror/mirror.lst'
-  mirror_file='/tmp/mirror.lst'
-
-  printf1 'Fetching mirror list'
-  printf "\n\n"
-  curl -s -o $mirror_file $mirror_url
-
-  while read -r country url mirror_name
-  do
-    wprintf " %s. %s - %s" "$count" "$country" "$mirror_name"
-    printf "\n"
-    wprintf "   * %s" "$url"
-    printf "\n"
-    count=$((count + 1))
-  done < "$mirror_file"
-
-  printf "\n"
-  wprintf '[?] Select a mirror number (enter for default): '
-  read -r a
-  printf "\n"
-
-  # bugfix: detected chars added sometimes - clear chars
-  _a=$(printf "%s" "$a" | sed 's/[a-z]//Ig' 2> /dev/null)
-
-  if [ -z "$_a" ]
-  then
-    printf1 "Choosing default mirror: %s " $BA_REPO_URL
-  else
-    BA_REPO_URL=$(sed -n "${_a}p" $mirror_file | cut -d "|" -f 2)
-    printf "[+] Mirror from '%s' selected" \
-      "$(sed -n "${_a}p" $mirror_file | cut -d "|" -f 3)"
-    printf "\n\n"
-  fi
-
-  rm -f $mirror_file
-
-  return $SUCCESS
-}
 
 setup_mirrorlist()
 {
@@ -1951,6 +1888,9 @@ setup_extrasystem()
   enable_iwd_networkmanager
   sleep_clear 1
 
+  ask_vbox_setup
+  sleep_clear 1
+   
   if [ $VBOX_SETUP -eq $TRUE ]
   then
     setup_vbox_utils
