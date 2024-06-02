@@ -3,7 +3,7 @@
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
 
 # version
-VERSION='2.24.40'
+VERSION='2.25.00'
 
 # true / false
 TRUE=0
