@@ -2108,6 +2108,8 @@ main()
   sleep_clear 1
   disable_sign_check 3
   sleep_clear 1
+  check_pacman_issues
+  sleep_clear 1
   run_update_initramfs
   sleep_clear 1
   umount_filesystems
