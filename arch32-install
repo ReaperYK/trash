@@ -2085,7 +2085,7 @@ main()
   clear
   mount_filesystems
   sleep_clear 1
-
+s
   # truble fixing
   disable_sign_check 1
   sleep_clear 1
