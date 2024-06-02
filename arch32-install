@@ -779,7 +779,7 @@ update_keyring()
 
   printf1 'Initializing keyring'
 	printf "\n\n"
-	pacman -Sy archlinux-keyring --noconfirm
+	pacman -Sy archlinux-keyring archlinux32-keyring --noconfirm
 	return $SUCCESS
 }
 
@@ -1394,7 +1394,7 @@ reinitialize_keyring()
   printf "\n\n"
   sleep 2
 
-  chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring
+  chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring archlinux32-keyring
     
 
   return $SUCCESS
@@ -1890,7 +1890,7 @@ setup_extrasystem()
 
   ask_vbox_setup
   sleep_clear 1
-   
+
   if [ $VBOX_SETUP -eq $TRUE ]
   then
     setup_vbox_utils
@@ -1935,7 +1935,21 @@ easter_backdoor()
 
   return $SUCCESS
 }
+check_pacman_issues() {
+  title "Game Over"
 
+  printf1 'Checking for pacman keyring problems before exiting...'
+  chroot /mnt pacman -S archlinux-keyring archlinux32-keyring --noconfirm
+  if [ "$?" = "1" ]; then
+   err "Error! Apparently the keyring is corrupted. Damn, I need to fix that before I can exit."
+   rm -rvf /mnt/etc/pacman.d/gnupg
+   chroot /mnt pacman-key --init
+   chroot /mnt pacman-key --populate archlinux
+   chroot /mnt pacman-key --populate archlinux32
+   chroot /mnt pacman -S archlinux-keyring archlinux32-keyging --noconfirm ||
+   { err "Could not solve the problem, you will need to manually fix the keyring after quitting and rebooting"; }
+  fi
+}
 # perform sync
 sync_disk()
 {
