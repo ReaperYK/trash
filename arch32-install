@@ -1712,15 +1712,14 @@ fi
 
 }
 
-ask_de_setup() {
+ask_x11_setup() {
   title "Arch Linux Setup > Desktop Envrionment"
-  printf "[?] Setup desktop environment [y/n]: "
+  printf "[?] Setup X11 + LXQT / LXDE Desktop [y/n]: "
   read ASK_DE
   
   if [ "$ASK_DE" = "y" ]; then
-   DE_SETUP=$TRUE
-  else
-   DE_SETUP=$FALSE
+  sleep_clear 1
+  setup_x11
   fi
 
 }
@@ -1730,52 +1729,31 @@ setup_de()
 {
   title "Arch Linux Setup > Desktop Environment"
   printf "
-  1. KDE Plasma
-  2. GNOME
-  3. Xfce4
+  1. LXQT
+  2. Xfce
   4. LXDE \n\n"
   printf "[?] Choose [default=2]: "
   read choose_de
 
   if [ $choose_de = 1 ]; then
-  DE_MAIN='plasma'
-	DE_EXTPKG='kde-applications spectacle'
+  DE_MAIN='lxqt'
+	DE_EXTPKG='breeze-icons spectacle'
 	DE_MAN='sddm'
-  DE_TITLE='KDE Plasma'
   elif [ $choose_de = 2 ]; then
-  DE_MAIN='gnome'
-	DE_EXTPKG='gnome-keyring gnome-screenshot gnome-extra'
-	DE_MAN='gdm'
-  DE_TITLE='GNOME'
-  elif [ $choose_de = 3 ]; then
   DE_MAIN='xfce4'
-	DE_EXTPKG='gnome-keyring xfce4-goodies spectacle'
+	DE_EXTPKG='xfce4-goodies spectacle'
 	DE_MAN='sddm'
-  DE_TITLE='Xfce4'
-  elif [ $choose_de = 4 ]; then
-  DE_MAIN='lxde'
-	DE_EXTPKG='lxde-common lxsession openbox spectacle'
-	DE_MAN='lxdm'
-  DE_TITLE='LXDE'
   elif [ -z $choose_de ]; then
-  DE_MAIN='plasma'
-	DE_EXTPKG='kde-applications spectacle'
-	DE_MAN='sddm'
-  DE_TITLE='KDE Plasma'
+  DE_MAIN='lxde'
+	DE_EXTPKG='spectacle'
+	DE_MAN='lxdm'
   choose_de=1
   fi
 
-  sleep_clear 1
-	
-  title "Arch Linux Setup > Desktop Environment"
-
- 	printf1 "Installing $DE_TITLE"
 	printf "\n\n"
 
-  CTRL_C_PROTECT=$TRUE
-	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm \
-         || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; yes $choose_de | setup_de; return $SUCCESS; }
-  CTRL_C_PROTECT=$FALSE
+	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN xorg-server xorg xorg-xinit xorg-xlsfonts --disable-download-timeout --needed --noconfirm \
+         || { err "Install failed"; }
 
 	chroot $CHROOT systemctl enable $DE_MAN
 	sleep 3
@@ -1882,6 +1860,9 @@ setup_extrasystem()
   enable_iwd_networkmanager
   sleep_clear 1
 
+  ask_x11_setup
+  sleep_clear 1
+  
   ask_vbox_setup
   sleep_clear 1
 
