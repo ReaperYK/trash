@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ArchLinux 32bit Installer
+# ArchLinux 32bit easy installer
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
 
 # version
@@ -758,9 +758,9 @@ pacman_pdl_setup()
    printf1 'Setting up /etc/pacman.conf'
    sed -i "s/#ParallelDownloads/ParallelDownloads/" "/mnt/etc/pacman.conf"
   else 
-     title 'Pacman > Parallel Download'
-     printf1 'Setting up /etc/pacman.conf'
-     sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
+   title 'Pacman > Parallel Download'
+   printf1 'Setting up /etc/pacman.conf'
+   sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
   fi
 
   return $SUCCESS
@@ -1929,10 +1929,12 @@ easter_backdoor()
 
   return $SUCCESS
 }
+
 check_pacman_issues() {
   title "Game Over"
 
-  printf1 'Checking for pacman keyring problems before exiting...'
+  wprintf '[+] Checking for pacman keyring problems before exiting...'
+  printf "\n\n"
   chroot /mnt pacman -S archlinux-keyring archlinux32-keyring --noconfirm
   if [ "$?" = "1" ]; then
    err "Error! Apparently the keyring is corrupted. Damn, I need to fix that before I can exit."
