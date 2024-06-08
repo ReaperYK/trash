@@ -1725,7 +1725,7 @@ ask_x11_setup() {
 }
 
 # select desktop environmrnt
-setup_de()
+setup_x11()
 {
   title "Arch Linux Setup > Desktop Environment"
   printf "
