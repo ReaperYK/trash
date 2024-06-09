@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 # ArchLinux 32bit easy installer
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
  
