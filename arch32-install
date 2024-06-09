@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # ArchLinux 32bit easy installer
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
-t
-# version
-VERSION='2.25.2'
 
 # true / false
 TRUE=0
@@ -250,7 +247,7 @@ err()
 banner()
 {
   columns="$(tput cols)"
-  str="--==[ Arch Linux32 Installer - ver $VERSION ]==--"
+  str="--==[ Arch Linux32 Installer ]==--"
 
   printf "${BLUEB}%*s${NC}\n" "${COLUMNS:-$(tput cols)}" | tr ' ' '-'
 
