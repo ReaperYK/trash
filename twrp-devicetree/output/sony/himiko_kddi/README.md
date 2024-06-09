@@ -1,6 +1,6 @@
 # Android device tree for Sony Himiko_kddi(S0V42) (himiko_kddi)
-Warning: Building TWRP with this device tree did not boot due to Sony DRM.
-It is wiser to give up and use an Android that can easily use TWRP such as Galaxy or Pixel!
+Warning: building TWRP using this device tree did not work due to Sony's DRM. 
+It is wiser to give up and use an Android device that can easily use TWRP, such as Galaxy or Pixel!
 
 ```
 #
