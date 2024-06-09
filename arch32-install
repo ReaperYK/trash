@@ -926,7 +926,7 @@ formatter() {
   target_filesystem="$2"
   
   if [ "$target_filesystem" = "ext4" ]; then
-   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
+   format_command='mkfs.ext4 -m 0 -F'
   elif [ "$target_filesystem" = "btrfs" ]; then
    format_command='mkfs.btrfs -f'
   elif [ "$target_filesystem" = "ext2" ]; then
@@ -934,7 +934,7 @@ formatter() {
   elif [ "$target_filesystem" = "ext3" ]; then
    format_command='mkfs.ext3 -F -m 0'
   else
-   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
+   format_command='mkfs.ext4 -m 0 -F'
   fi
 
   title "Hard Drive Setup > Partition Formatting"
@@ -1129,7 +1129,7 @@ setup_resolvconf()
   then
    echo "nameserver 8.8.8.8" >> /mnt/etc/resolv.conf
    chroot /mnt curl -s $ASCII || {
-    err "No network connection. Aborting"; exit $FAILURE; }
+    err "Unable to connect to network on new system at chroot destination. Aborting."; exit $FAILURE; }
   fi
   
   else
@@ -1399,13 +1399,13 @@ setup_extra_packages()
 {
    arch='arch-install-scripts pkgfile'
    bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
+   browser='elinks firefox'
    editor='nano'
    filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
    filemanager=''
    media='mplayer'
-   audio='alsa-utils pulseaudio'
+   audio='alsa-utils pulseaudio pavucontrol'
    hardware='amd-ucode intel-ucode'
    kernel=''
    misc='acpi haveged hdparm htop inotify-tools irssi
@@ -1474,17 +1474,6 @@ ask_pacman_external_downloader() {
 setup_base_system()
 {
   pass_mirror_conf # copy mirror list to chroot env
-  
-  if [ $USE_ADV_ASK = $TRUE ]; then
-     ask_pacman_external_downloader
-     sleep_clear 1
-  fi
-
-  if [ "$PACMANDL" = "WGET" ]
-  then
-    config_pacman_dl liveenv
-    sleep_clear 1
-  fi
 
   setup_resolvconf
   sleep_clear 1
@@ -1578,25 +1567,6 @@ enable_iwd_networkmanager()
   return $SUCCESS
 }
 
-
-# update /etc files and set up iptables
-update_etc()
-{
-  title "Arch Linux Setup > Etc files"
-
-  printf1 'Updating /etc files'
-  printf "\n\n"
-  
-   if [ "$LIGHTWEIGHT_PACKAGES_GROUP" != "$TRUE" ]; then
-   printf "\n
-   UXTerm*faceName:                 xft:xos4 Terminus:size=14
-   UXTerm*background:               #000000
-   UXTerm*foreground:               #FFFFFF" >> /mnt/usr/share/X11/app-defaults/UXTerm
-   fi
-
-
-  return $SUCCESS
-}
 
 # setting up fcitx5
 setup_im()
@@ -1714,51 +1684,26 @@ fi
 
 ask_x11_setup() {
   title "Arch Linux Setup > Desktop Envrionment"
-  printf "[?] Setup X11 + LXQT / LXDE Desktop [y/n]: "
-  read ASK_DE
-  
-  if [ "$ASK_DE" = "y" ]; then
-  sleep_clear 1
-  setup_x11
-  fi
+  warn "Enabling X11 may result in a slight increase in resident memory usage."
+  printf "\n"
+  wprintf "[?] Setup X11 + LXDE Desktop [y/n]: "
+  read ASK_X11_LXDE_SETUP
 
+  return $SUCCESS
 }
 
-# select desktop environmrnt
-setup_x11()
+# lxde setup
+setup_x11_lxde()
 {
-  title "Arch Linux Setup > Desktop Environment"
-  printf "
-  1. LXQT
-  2. Xfce
-  4. LXDE \n\n"
-  printf "[?] Choose [default=2]: "
-  read choose_de
+  title "Arch Linux Setup > LXDE Setup"
+  wprintf "[+] Setting up LXDE"
+  printf "\n\n"
+  chroot $CHROOT pacman -S lxde lxdm spectacle xorg-server xorg xorg-xinit xorg-xlsfonts --needed --noconfirm \ || 
+  { warn "Install failed"; echo;}
 
-  if [ $choose_de = 1 ]; then
-  DE_MAIN='lxqt'
-	DE_EXTPKG='breeze-icons spectacle'
-	DE_MAN='sddm'
-  elif [ $choose_de = 2 ]; then
-  DE_MAIN='xfce4'
-	DE_EXTPKG='xfce4-goodies spectacle'
-	DE_MAN='sddm'
-  elif [ -z $choose_de ]; then
-  DE_MAIN='lxde'
-	DE_EXTPKG='spectacle'
-	DE_MAN='lxdm'
-  choose_de=1
-  fi
+  chroot $CHROOT systemctl enable lxdm
 
-	printf "\n\n"
-
-	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN xorg-server xorg xorg-xinit xorg-xlsfonts --disable-download-timeout --needed --noconfirm \
-         || { err "Install failed"; }
-
-	chroot $CHROOT systemctl enable $DE_MAN
-	sleep 3
-
-	return $SUCCESS
+  return $SUCCESS
 }
 
 
@@ -1849,9 +1794,6 @@ update_user_groups()
 # setup archlinux related stuff
 setup_extrasystem()
 {
-  update_etc
-  sleep_clear 1
-
   if [ $LANGUAGE = 2 ]; then
    setup_im
    sleep_clear 1
@@ -1862,6 +1804,11 @@ setup_extrasystem()
 
   ask_x11_setup
   sleep_clear 1
+  
+  if [ "$ASK_X11_LXDE_SETUP" = "y" ]; then
+  sleep_clear 1
+  setup_x11_lxde
+  fi
   
   ask_vbox_setup
   sleep_clear 1
@@ -2081,8 +2028,6 @@ main()
   sleep_clear 1
   
   # epilog
-  update_package
-  sleep_clear 1
   disable_sign_check 3
   sleep_clear 1
   check_pacman_issues
@@ -2098,102 +2043,11 @@ main()
   return $SUCCESS
 }
 
-show_help() {
-  title "Help"
-  wprintf "[+] ArchLinux Easy Installer $VERSION"
-  printf "\n\n"
-}
-
-recovery_console() {
-  while [ "$operation" != "exit" ]; 
-  do
-  title 'Recovery Mode'
-  warn "This is used in case of problems or to test various functions."
-  printf "\n"
-  printf "
-  1. Install base packages (File system must already be mounted)
-  2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
-  3. Install extra packages
-  4. Enable lightweight additional packages
-  5. Enable Force UEFI mode
-  6. Delete EFI information and grub recorded at the beginning of the drive"
-
-  printf "\n\n"
-  printf "[?] Enter number [exit]: "
-  read -r operation
-  echo
-
-  if [ "$operation" = "1" ]; then
-   disable_sign_check 1
-   setup_resolvconf
-   pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
-   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
-   chroot /mnt pacman -Syy --noconfirm
-   setup_resolvconf
-  elif [ "$operation" = "2" ]; then
-   mkdir -p "${CHROOT}/"{proc,sys,dev} 
-   mount -t proc proc "$CHROOT/proc" 
-   mount --rbind /sys "$CHROOT/sys" 
-   mount --make-rslave "$CHROOT/sys" 
-   mount --rbind /dev "$CHROOT/dev" 
-   mount --make-rslave "$CHROOT/dev" 
-  elif [ "$operation" = "3" ]; then
-   arch='arch-install-scripts pkgfile'
-   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
-   editor='nano'
-   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
-   filemanager=''
-   media=''
-   audio='alsa-utils pulseaudio pipewire'
-   hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
-   misc='acpi haveged hdparm htop inotify-tools irssi
-   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
-   unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
-   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
-   dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
-   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
-   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
-   xorg='xf86-video-amdgpu xf86-video-ati xorg-xclock
-   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
-   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
-   xf86-video-voodoo'
-   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
-   all="$all $misc $network $xorg $audio $media $filemanager"
-   chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
-   elif [ "$operation" = "4" ]; then
-    LW_EXT_PACK=$TRUE
-    main
-   elif [ "$operation" = "5" ]; then
-    FORCE_UEFI=$TRUE
-    main
-   elif [ "$operation" = "6" ]; then
-    echo
-    warn "This operation will destroy the disk's data and partition table"
-    echo "[?] Enter drive name [example: /dev/sda]: "
-    read -r erase_disk_device
-    dd if="/dev/zero" of="$erase_disk_device" count=300 bs=3MB status=progress
-  fi
-  done
-
-  return $SUCCESS
-}
-
-
-
 launch() {
   if [ -z $option ]; then
    main
-  elif [ "$option" = "--help" ]; then
-   clear
-   show_help
-  elif [ "$option" = "--console" ]; then
-   clear
-   recovery_console
+  else
+   $option
   fi
 }
 
