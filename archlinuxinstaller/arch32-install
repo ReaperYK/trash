@@ -1,17 +1,9 @@
 #!/usr/bin/env bash
-################################################################################
-#                                                                                                                                                                                                                                        #
-# arch-installer - BlackArch Installer mod                                                                                                                                                        # 
-#                                                                                                                                                                                                                                        #
-# AUTHOR - noptrix(original) / ReaperYK(mod)                                                                                                                                              #
-#                                                                                                                                                                                                                                         #
-################################################################################
-
-# version
-VERSION='2.24.40'
-
+# ArchLinux 32bit easy installer
+# You must be using an Archlinux32 LiveCD for this script to run successfully.
+ 
 # true / false
-TRUE=0
+TRUE=0 
 FALSE=1
 
 # return codes
@@ -120,15 +112,8 @@ CHROOT='/mnt'
 # normal system user
 NORMAL_USER=''
 
-# default BlackArch Linux repository URL
-BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germany
-#BA_REPO_URL='https://blackarch.cs.nycu.edu.tw/$repo/os/$arch' # Taiwan
-
 # default ArchLinux repository URL
 AR_REPO_URL='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
-AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
-AR_REPO_URL3='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -148,11 +133,8 @@ WLAN_SSID=''
 # wlan passphrase
 WLAN_PASSPHRASE=''
 
-# check boot mode
-BOOT_MODE=''
-
 # ascii art
-ASCII='https://raw.githubusercontent.com/ReaperYK/trash/main/rinuaa.txt'
+ASCII='https://raw.githubusercontent.com/ReaperYK/trash/main/otherfile/rinuaa.txt'
 
 # activate advaneced ask (default=FALSE)
 USE_ADV_ASK=$FALSE
@@ -163,13 +145,7 @@ USE_ADV_PART=$FALSE
 # Exit on CTRL + C
 CTRL_C_PROTECT=$FALSE
 
-LIGHTWEIGHT_PACKAGES_GROUP=$FALSE
-
-ASK_BLACKARCH_SETUP=""
-
 operation=""
-
-BLACKARCH_SETUP=$FALSE
 
 if [ "$1" = "--adv-option" ]; then
   USE_ADV_ASK=$TRUE
@@ -271,7 +247,7 @@ err()
 banner()
 {
   columns="$(tput cols)"
-  str="--==[ Arch Linux Installer - ver $VERSION ]==--"
+  str="--==[ Arch Linux32 Installer ]==--"
 
   printf "${BLUEB}%*s${NC}\n" "${COLUMNS:-$(tput cols)}" | tr ' ' '-'
 
@@ -286,22 +262,6 @@ banner()
 
   return $SUCCESS
 }
-
-
-# check boot mode
-check_boot_mode()
-{
-  efivars=$(ls /sys/firmware/efi/efivars > /dev/null 2>&1; echo $?)
-  if [ "$efivars" -eq "0" ]
-  then
-     BOOT_MODE="uefi"
-  elif [ $FORCE_UEFI = "$TRUE" ]; then
-     BOOT_MODE="uefi"
-  fi
-
-  return $SUCCESS
-}
-
 
 # sleep and clear
 sleep_clear()
@@ -546,8 +506,6 @@ update_pkg_database()
 # update pacman.conf and database
 update_pacman()
 {
-  enable_pacman_multilib
-  sleep_clear 1
 
   enable_pacman_color
   sleep_clear 1
@@ -797,9 +755,9 @@ pacman_pdl_setup()
    printf1 'Setting up /etc/pacman.conf'
    sed -i "s/#ParallelDownloads/ParallelDownloads/" "/mnt/etc/pacman.conf"
   else 
-     title 'Pacman > Parallel Download'
-     printf1 'Setting up /etc/pacman.conf'
-     sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
+   title 'Pacman > Parallel Download'
+   printf1 'Setting up /etc/pacman.conf'
+   sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
   fi
 
   return $SUCCESS
@@ -812,7 +770,7 @@ update_keyring()
 
   printf1 'Initializing keyring'
 	printf "\n\n"
-	pacman -Sy archlinux-keyring --noconfirm
+	pacman -Sy archlinux-keyring archlinux32-keyring --noconfirm
 	return $SUCCESS
 }
 
@@ -868,11 +826,7 @@ done
 # get partition label
 get_partition_label()
 {
-  if [ "$FORCE_UEFI" = "$TRUE" ]; then
-   PART_LAVEL="gpt"
-  else
    PART_LABEL="$(fdisk -l "$HD_DEV" | grep "Disklabel" | awk '{print $3;}')"
-  fi
 
   return $SUCCESS
 }
@@ -890,15 +844,6 @@ ask_partitions()
     sfdisk -l -q
     
     echo
-
-    if [ "$BOOT_MODE" = 'uefi' ]  && [ "$PART_LABEL" = 'gpt' ]
-    then
-      while [ -z "$BOOT_PART" ]; do
-        wprintf "[?] EFI System partition: "
-        read -r BOOT_PART
-        printf "\n"
-      done
-    else
       while [ -z "$BOOT_PART" ]; do
         wprintf "[?] Boot partition: "
         read -r BOOT_PART
@@ -906,7 +851,6 @@ ask_partitions()
         wprintf "[?] File System type (ext4,ext3,ext2,btrfs,empty to default): "
         read -r BOOT_PART_FS
       done
-    fi
     printf "\n"
     while [ -z "$ROOT_PART" ]; do
       wprintf "[?] Root partition: "
@@ -949,18 +893,8 @@ ask_partitions()
   return $SUCCESS
 }
 
-make_partition() {
-  if [ "$BOOT_MODE" = 'uefi' ]  && [ "$PART_LABEL" = 'gpt' ]
-  then
-  # boot partiton (UEFI)
-   title 'Hard Drive Setup > Partition Formatting'
-   wprintf '[+] Creating EFI System Partition'
-   printf "\n\n"
-   mkfs.vfat -F 32 $BOOT_PART
-   sleep_clear 1
-  else
+make_partitions() {
    formatter "$BOOT_PART" "$BOOT_PART_FS" # boot partiton (MBR)
-  fi
 
   # root partition
   if [ $LUKS = $TRUE ]
@@ -974,7 +908,13 @@ make_partition() {
   else
   formatter "$ROOT_PART" "$ROOT_PART_FS"
   fi
-
+  
+  if [ "$SWAP_PART" != "none" ]
+  then
+    make_swap_partition
+    sleep_clear 1
+  fi
+  
   return $SUCCESS
 }
 
@@ -983,7 +923,7 @@ formatter() {
   target_filesystem="$2"
   
   if [ "$target_filesystem" = "ext4" ]; then
-   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
+   format_command='mkfs.ext4 -m 0 -F'
   elif [ "$target_filesystem" = "btrfs" ]; then
    format_command='mkfs.btrfs -f'
   elif [ "$target_filesystem" = "ext2" ]; then
@@ -991,7 +931,7 @@ formatter() {
   elif [ "$target_filesystem" = "ext3" ]; then
    format_command='mkfs.ext3 -F -m 0'
   else
-   format_command='mkfs.ext4 -m 0 -O ^64bit -F'
+   format_command='mkfs.ext4 -m 0 -F'
   fi
 
   title "Hard Drive Setup > Partition Formatting"
@@ -1065,73 +1005,6 @@ make_swap_partition()
   printf "\n\n"
   mkswap $SWAP_PART  || { err 'Could not create filesystem'; exit $FAILURE; }
 
-}
-
-# make and format root partition
-make_root_partition()
-{
-  if [ $LUKS = $TRUE ]
-  then
-    make_luks_partition "$ROOT_PART"
-    sleep_clear 1
-    open_luks_partition "$ROOT_PART" "$CRYPT_ROOT"
-    sleep_clear 1
-    title 'Hard Drive Setup > Partition Creation (root crypto)'
-    printf1 'Creating encrypted ROOT partition'
-    printf "\n\n"
-      mkfs.ext4 -F "/dev/mapper/$CRYPT_ROOT"  ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
-    sleep_clear 1
-  else
-    title 'Hard Drive Setup > Partition Creation (root)'
-    printf1 'Creating ROOT partition'
-    printf "\n\n"
-      mkfs.ext4 -F "$ROOT_PART"  ||
-        { err 'Could not create filesystem'; exit $FAILURE; }
-    sleep_clear 1
-  fi
-
-  return $SUCCESS
-}
-
-# make and format boot partition
-make_boot_partition()
-{
-  if [ "$BOOT_MODE" = 'uefi' ] && [ "$PART_LABEL" = 'gpt' ]
-  then
-    return $SUCCESS
-  fi
-
-  title 'Hard Drive Setup > Partition Creation (boot)'
-
-  printf1 'Creating BOOT partition'
-  printf "\n\n"
-  if [ "$BOOT_MODE" = 'uefi' ] && [ "$PART_LABEL" = 'gpt' ]
-  then
-    mkfs.fat -F32 "$BOOT_PART"  ||
-      { err 'Could not create filesystem'; exit $FAILURE; }
-  else
-    mkfs.ext4 -F "$BOOT_PART"  ||
-      { err 'Could not create filesystem'; exit $FAILURE; }
-  fi
-
-  return $SUCCESS
-}
-
-
-# make and format partitions
-make_partitions()
-{
-  make_partition
-  sleep_clear 1
-
-  if [ "$SWAP_PART" != "none" ]
-  then
-    make_swap_partition
-    sleep_clear 1
-  fi
-
-  return $SUCCESS
 }
 
 # mount filesystems
@@ -1232,11 +1105,6 @@ install_base_packages()
   pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
     terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
-  
-  printf "\n"
-  printf1 'Updating pacman database'
-  printf "\n\n"
-  chroot $CHROOT pacman -Syy --noconfirm --overwrite='*' 
 
   return $SUCCESS
 }
@@ -1245,6 +1113,7 @@ install_base_packages()
 # setup /etc/resolv.conf
 setup_resolvconf()
 {
+  if [ "$1" = "chroot" ]; then
   title 'Base System Setup > Etc'
 
   printf1 'Setting up /etc/resolv.conf'
@@ -1252,6 +1121,23 @@ setup_resolvconf()
 
   mkdir -p "$CHROOT/etc/" 
   cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf" 
+  
+  if ! chroot /mnt curl -s $ASCII
+  then
+   echo "nameserver 8.8.8.8" >> /mnt/etc/resolv.conf
+   chroot /mnt curl -s $ASCII || {
+    err "Unable to connect to network on new system at chroot destination. Aborting."; exit $FAILURE; }
+  fi
+  
+  else
+  title 'Base System Setup > Etc'
+
+  printf1 'Setting up /etc/resolv.conf'
+  printf "\n\n"
+   
+  mkdir -p "$CHROOT/etc/" 
+  cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf" 
+  fi
 
   return $SUCCESS
 }
@@ -1408,34 +1294,11 @@ setup_hostname()
 }
 
 
-# setup boot loader for UEFI/GPT or BIOS/MBR
+# setup boot loader for MBR
 setup_bootloader()
 {
   title 'Base System Setup > Boot Loader'
 
-  if [ "$BOOT_MODE" = 'uefi' ] && [ "$PART_LABEL" = 'gpt' ]
-  then
-    printf1 'Setting up GRUB (EFI) boot loader'
-    printf "\n\n"
-
-    uuid="$(lsblk -o UUID "$ROOT_PART" | sed -n 2p)"
-
-    if [ $LUKS = $TRUE ]
-    then
-      sed -i "s|loglevel=3 quiet|cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
-        "$CHROOT/etc/default/grub"
-    fi
-
-    echo "GRUB_BACKGROUND=\"/boot/grub/splash.png\"" >> \
-      "$CHROOT/etc/default/grub"
-
-    sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
-    sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
-    echo
-
-    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="archlinux" --recheck
-    chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
-  else
     printf1 'Setting up GRUB boot loader'
     printf "\n\n"
 
@@ -1456,8 +1319,6 @@ setup_bootloader()
 
     chroot $CHROOT grub-install --target=i386-pc --recheck "$HD_DEV" 
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
-
-  fi
 
   return $SUCCESS
 }
@@ -1524,7 +1385,7 @@ reinitialize_keyring()
   printf "\n\n"
   sleep 2
 
-  chroot $CHROOT pacman -Sy --overwrite='*' --noconfirm archlinux-keyring
+  chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring archlinux32-keyring
     
 
   return $SUCCESS
@@ -1533,48 +1394,17 @@ reinitialize_keyring()
 # install extra (missing) packages
 setup_extra_packages()
 {
-  if [ "$LW_EXT_PACK" = "$TRUE" ]; then
-     LIGHTWEIGHT_PACKAGES_GROUP=$TRUE
-  fi
-
-  if [ "$LIGHTWEIGHT_PACKAGES_GROUP" != "$TRUE" ]; then
    arch='arch-install-scripts pkgfile'
    bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser='chromium elinks firefox'
-   editor='hexedit nano vim mousepad'
-   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted'
-   filemanager='thunar ark dolphin'
-   media='ffmpeg yt-dlp mpv'
-   audio='alsa-utils pulseaudio pipewire pavucontrol'
-   hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
-   misc='acpi git haveged hdparm htop inotify-tools ipython irssi
-   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
-   unzip upower usb_modeswitch usbutils zip fcitx5-im fcitx5-mozc python 
-   jre-openjdk docker kotlin ruby cmake curl dkms python-pip os-prober grub'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji noto-fonts-emoji noto-fonts noto-fonts-cjk noto-fonts-extra'
-   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd dialog
-   dnscrypt-proxy dnsmasq dnsutils fwbuilder iw networkmanager
-   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
-   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
-   xorg='xorg rxvt-unicode xf86-video-amdgpu xf86-video-ati xorg-xclock
-   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau feh
-   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
-   xf86-video-voodoo xorg-server xorg-xbacklight xorg-xinit xterm xorg-xlsfonts'
-  else
-   arch='arch-install-scripts pkgfile'
-   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
+   browser='elinks firefox'
    editor='nano'
    filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
    filemanager=''
-   media=''
-   audio='alsa-utils pulseaudio pipewire'
+   media='mplayer'
+   audio='alsa-utils pulseaudio pavucontrol'
    hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
+   kernel=''
    misc='acpi haveged hdparm htop inotify-tools irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    screen smartmontools strace tmux udisks2 unace unrar grub os-prober
@@ -1588,7 +1418,6 @@ setup_extra_packages()
    xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
    xf86-video-sisusb xf86-video-vesa xf86-video-vmware
    xf86-video-voodoo'
-  fi
   
   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
   all="$all $misc $network $xorg $audio $media $filemanager"
@@ -1642,17 +1471,6 @@ ask_pacman_external_downloader() {
 setup_base_system()
 {
   pass_mirror_conf # copy mirror list to chroot env
-  
-  if [ $USE_ADV_ASK = $TRUE ]; then
-     ask_pacman_external_downloader
-     sleep_clear 1
-  fi
-
-  if [ "$PACMANDL" = "WGET" ]
-  then
-    config_pacman_dl liveenv
-    sleep_clear 1
-  fi
 
   setup_resolvconf
   sleep_clear 1
@@ -1660,7 +1478,7 @@ setup_base_system()
   install_base_packages
   sleep_clear 1
 
-  setup_resolvconf
+  setup_resolvconf "chroot"
   sleep_clear 1
   
   setup_fstab
@@ -1670,9 +1488,6 @@ setup_base_system()
   sleep_clear 1
 
   setup_locale
-  sleep_clear 1
-
-  enable_pacman_multilib 'chroot'
   sleep_clear 1
 
   enable_pacman_color 'chroot'
@@ -1720,12 +1535,12 @@ else
   pacman_pdl_setup chroot
   sleep_clear 1
   
+  disable_sign_check 2
+  sleep_clear 1
+  
   reinitialize_keyring
   sleep_clear 1
   
-  disable_sign_check 2
-  sleep_clear 1
-
   setup_extra_packages
   sleep_clear 1
 
@@ -1750,25 +1565,6 @@ enable_iwd_networkmanager()
 }
 
 
-# update /etc files and set up iptables
-update_etc()
-{
-  title "Arch Linux Setup > Etc files"
-
-  printf1 'Updating /etc files'
-  printf "\n\n"
-  
-   if [ "$LIGHTWEIGHT_PACKAGES_GROUP" != "$TRUE" ]; then
-   printf "\n
-   UXTerm*faceName:                 xft:xos4 Terminus:size=14
-   UXTerm*background:               #000000
-   UXTerm*foreground:               #FFFFFF" >> /mnt/usr/share/X11/app-defaults/UXTerm
-   fi
-
-
-  return $SUCCESS
-}
-
 # setting up fcitx5
 setup_im()
 {
@@ -1786,64 +1582,6 @@ setup_im()
   return $SUCCESS
 }
 
-ask_blackarch_mirror_setup()
-{
-  title "ArchLinux Setup > BlackArch Mirror / keyring Setup"
-  wprintf '[?] Setup BlackArch keyring and mirror server [y/n] [If you are not sure, press "n"]: '
-  read ASK_BLACKARCH_SETUP
-
-  if [ "$ASK_BLACKARCH_SETUP" = "y" ]; then
-   BLACKARCH_SETUP=$TRUE
-  fi
-
-  return 0
-}
-
-# ask for BlackArch Linux lmirror
-ask_mirror()
-{
-  title "BlackArch Linux Setup > Arch Linux Mirror"
-
-  local IFS='|'
-  count=1
-  mirror_url='https://raw.githubusercontent.com/BlackArch/blackarch/master/mirror/mirror.lst'
-  mirror_file='/tmp/mirror.lst'
-
-  printf1 'Fetching mirror list'
-  printf "\n\n"
-  curl -s -o $mirror_file $mirror_url
-
-  while read -r country url mirror_name
-  do
-    wprintf " %s. %s - %s" "$count" "$country" "$mirror_name"
-    printf "\n"
-    wprintf "   * %s" "$url"
-    printf "\n"
-    count=$((count + 1))
-  done < "$mirror_file"
-
-  printf "\n"
-  wprintf '[?] Select a mirror number (enter for default): '
-  read -r a
-  printf "\n"
-
-  # bugfix: detected chars added sometimes - clear chars
-  _a=$(printf "%s" "$a" | sed 's/[a-z]//Ig' 2> /dev/null)
-
-  if [ -z "$_a" ]
-  then
-    printf1 "Choosing default mirror: %s " $BA_REPO_URL
-  else
-    BA_REPO_URL=$(sed -n "${_a}p" $mirror_file | cut -d "|" -f 2)
-    printf "[+] Mirror from '%s' selected" \
-      "$(sed -n "${_a}p" $mirror_file | cut -d "|" -f 3)"
-    printf "\n\n"
-  fi
-
-  rm -f $mirror_file
-
-  return $SUCCESS
-}
 
 setup_mirrorlist()
 {
@@ -1941,75 +1679,28 @@ fi
 
 }
 
-ask_de_setup() {
+ask_x11_setup() {
   title "Arch Linux Setup > Desktop Envrionment"
-  printf "[?] Setup desktop environment [y/n]: "
-  read ASK_DE
-  
-  if [ "$ASK_DE" = "y" ]; then
-   DE_SETUP=$TRUE
-  else
-   DE_SETUP=$FALSE
-  fi
+  warn "Enabling X11 may result in a slight increase in resident memory usage."
+  printf "\n"
+  wprintf "[?] Setup X11 + LXDE Desktop [y/n]: "
+  read ASK_X11_LXDE_SETUP
 
+  return $SUCCESS
 }
 
-# select desktop environmrnt
-setup_de()
+# lxde setup
+setup_x11_lxde()
 {
-  title "Arch Linux Setup > Desktop Environment"
-  printf "
-  1. KDE Plasma
-  2. GNOME
-  3. Xfce4
-  4. LXDE \n\n"
-  printf "[?] Choose [default=2]: "
-  read choose_de
+  title "Arch Linux Setup > LXDE Setup"
+  wprintf "[+] Setting up LXDE"
+  printf "\n\n"
+  chroot $CHROOT pacman -S lxde lxdm spectacle xorg-server xorg xorg-xinit xorg-xlsfonts --needed --noconfirm \ || 
+  { warn "Install failed"; echo;}
 
-  if [ $choose_de = 1 ]; then
-  DE_MAIN='plasma'
-	DE_EXTPKG='kde-applications spectacle'
-	DE_MAN='sddm'
-  DE_TITLE='KDE Plasma'
-  elif [ $choose_de = 2 ]; then
-  DE_MAIN='gnome'
-	DE_EXTPKG='gnome-keyring gnome-screenshot gnome-extra'
-	DE_MAN='gdm'
-  DE_TITLE='GNOME'
-  elif [ $choose_de = 3 ]; then
-  DE_MAIN='xfce4'
-	DE_EXTPKG='gnome-keyring xfce4-goodies spectacle'
-	DE_MAN='sddm'
-  DE_TITLE='Xfce4'
-  elif [ $choose_de = 4 ]; then
-  DE_MAIN='lxde'
-	DE_EXTPKG='lxde-common lxsession openbox spectacle'
-	DE_MAN='lxdm'
-  DE_TITLE='LXDE'
-  elif [ -z $choose_de ]; then
-  DE_MAIN='plasma'
-	DE_EXTPKG='kde-applications spectacle'
-	DE_MAN='sddm'
-  DE_TITLE='KDE Plasma'
-  choose_de=1
-  fi
+  chroot $CHROOT systemctl enable lxdm
 
-  sleep_clear 1
-	
-  title "Arch Linux Setup > Desktop Environment"
-
- 	printf1 "Installing $DE_TITLE"
-	printf "\n\n"
-
-  CTRL_C_PROTECT=$TRUE
-	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm \
-         || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; yes $choose_de | setup_de; return $SUCCESS; }
-  CTRL_C_PROTECT=$FALSE
-
-	chroot $CHROOT systemctl enable $DE_MAN
-	sleep 3
-
-	return $SUCCESS
+  return $SUCCESS
 }
 
 
@@ -2100,9 +1791,6 @@ update_user_groups()
 # setup archlinux related stuff
 setup_extrasystem()
 {
-  update_etc
-  sleep_clear 1
-
   if [ $LANGUAGE = 2 ]; then
    setup_im
    sleep_clear 1
@@ -2110,26 +1798,15 @@ setup_extrasystem()
 
   enable_iwd_networkmanager
   sleep_clear 1
+
+  ask_x11_setup
+  sleep_clear 1
   
-  ask_blackarch_mirror_setup
+  if [ "$ASK_X11_LXDE_SETUP" = "y" ]; then
   sleep_clear 1
-
-  if [ $BLACKARCH_SETUP = $TRUE ]; then
-   ask_mirror
-   sleep_clear 1
-   run_strap_sh
-   sleep_clear 1
+  setup_x11_lxde
   fi
-
-  ask_de_setup
-  sleep_clear 1
-
-  if [ "$DE_SETUP" = "$TRUE" ]
-  then
-	 setup_de
-	 sleep_clear 1
-  fi
-
+  
   ask_vbox_setup
   sleep_clear 1
 
@@ -2161,7 +1838,7 @@ easter_backdoor()
   bar=0
 
   title 'Game Over'
-  wprintf "[+] Arch Linux installation successfull!"
+  wprintf "[+] Arch Linux32 installation successfull!"
 
   printf "\n\n"
   wprintf 'Yo n00b, b4ckd00r1ng y0ur sy5t3m n0w '
@@ -2178,6 +1855,22 @@ easter_backdoor()
   return $SUCCESS
 }
 
+check_pacman_issues() {
+  title "Game Over"
+
+  wprintf '[+] Checking for pacman keyring problems'
+  printf "\n\n"
+  chroot /mnt pacman -S archlinux-keyring archlinux32-keyring --noconfirm
+  if [ "$?" = "1" ]; then
+   err "Error! Apparently the keyring is corrupted. Damn, I need to fix that before I can exit."
+   rm -rvf /mnt/etc/pacman.d/gnupg
+   chroot /mnt pacman-key --init
+   chroot /mnt pacman-key --populate archlinux
+   chroot /mnt pacman-key --populate archlinux32
+   chroot /mnt pacman -S archlinux-keyring archlinux32-keyging --noconfirm ||
+   { err "Could not solve the problem, you will need to manually fix the keyring after quitting and rebooting"; }
+  fi
+}
 # perform sync
 sync_disk()
 {
@@ -2233,7 +1926,6 @@ main()
   # do some ENV checks
   sleep_clear 0
   check_uid
-  check_boot_mode
   check_env
   
   setfont ter-114n || {
@@ -2319,9 +2011,6 @@ main()
   disable_sign_check 1
   sleep_clear 1
 
-  setup_mirrorlist
-  sleep_clear 1
-
   update_keyring
   sleep_clear 1
 
@@ -2336,9 +2025,9 @@ main()
   sleep_clear 1
   
   # epilog
-  update_package
-  sleep_clear 1
   disable_sign_check 3
+  sleep_clear 1
+  check_pacman_issues
   sleep_clear 1
   run_update_initramfs
   sleep_clear 1
@@ -2351,102 +2040,11 @@ main()
   return $SUCCESS
 }
 
-show_help() {
-  title "Help"
-  wprintf "[+] ArchLinux Easy Installer $VERSION"
-  printf "\n\n"
-}
-
-recovery_console() {
-  while [ "$operation" != "exit" ]; 
-  do
-  title 'Recovery Mode'
-  warn "This is used in case of problems or to test various functions."
-  printf "\n"
-  printf "
-  1. Install base packages (File system must already be mounted)
-  2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
-  3. Install extra packages
-  4. Enable lightweight additional packages
-  5. Enable Force UEFI mode
-  6. Delete EFI information and grub recorded at the beginning of the drive"
-
-  printf "\n\n"
-  printf "[?] Enter number [exit]: "
-  read -r operation
-  echo
-
-  if [ "$operation" = "1" ]; then
-   disable_sign_check 1
-   setup_resolvconf
-   pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
-   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
-   chroot /mnt pacman -Syy --noconfirm
-   setup_resolvconf
-  elif [ "$operation" = "2" ]; then
-   mkdir -p "${CHROOT}/"{proc,sys,dev} 
-   mount -t proc proc "$CHROOT/proc" 
-   mount --rbind /sys "$CHROOT/sys" 
-   mount --make-rslave "$CHROOT/sys" 
-   mount --rbind /dev "$CHROOT/dev" 
-   mount --make-rslave "$CHROOT/dev" 
-  elif [ "$operation" = "3" ]; then
-   arch='arch-install-scripts pkgfile'
-   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
-   editor='nano'
-   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
-   filemanager=''
-   media=''
-   audio='alsa-utils pulseaudio pipewire'
-   hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
-   misc='acpi haveged hdparm htop inotify-tools irssi
-   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
-   unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
-   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
-   dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
-   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
-   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
-   xorg='xf86-video-amdgpu xf86-video-ati xorg-xclock
-   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
-   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
-   xf86-video-voodoo'
-   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
-   all="$all $misc $network $xorg $audio $media $filemanager"
-   chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
-   elif [ "$operation" = "4" ]; then
-    LW_EXT_PACK=$TRUE
-    main
-   elif [ "$operation" = "5" ]; then
-    FORCE_UEFI=$TRUE
-    main
-   elif [ "$operation" = "6" ]; then
-    echo
-    warn "This operation will destroy the disk's data and partition table"
-    echo "[?] Enter drive name [example: /dev/sda]: "
-    read -r erase_disk_device
-    dd if="/dev/zero" of="$erase_disk_device" count=300 bs=3MB status=progress
-  fi
-  done
-
-  return $SUCCESS
-}
-
-
-
 launch() {
   if [ -z $option ]; then
    main
-  elif [ "$option" = "--help" ]; then
-   clear
-   show_help
-  elif [ "$option" = "--console" ]; then
-   clear
-   recovery_console
+  else
+   $option
   fi
 }
 
