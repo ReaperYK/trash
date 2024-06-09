@@ -3,7 +3,7 @@
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
 
 # true / false
-TRUE=0
+TRUE=0 
 FALSE=1
 
 # return codes
