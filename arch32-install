@@ -1861,7 +1861,7 @@ easter_backdoor()
 check_pacman_issues() {
   title "Game Over"
 
-  wprintf '[+] Checking for pacman keyring problems before exiting...'
+  wprintf '[+] Checking for pacman keyring problems'
   printf "\n\n"
   chroot /mnt pacman -S archlinux-keyring archlinux32-keyring --noconfirm
   if [ "$?" = "1" ]; then
