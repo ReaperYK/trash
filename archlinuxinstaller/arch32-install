@@ -1695,7 +1695,7 @@ setup_x11_lxde()
   title "Arch Linux Setup > LXDE Setup"
   wprintf "[+] Setting up LXDE"
   printf "\n\n"
-  chroot $CHROOT pacman -S lxde lxdm spectacle xorg-server xorg xorg-xinit xorg-xlsfonts --needed --noconfirm \ || 
+  chroot $CHROOT pacman -S lxde lxdm spectacle xorg-server xorg xorg-xinit xorg-xlsfonts --needed --noconfirm || 
   { warn "Install failed"; echo;}
 
   chroot $CHROOT systemctl enable lxdm
