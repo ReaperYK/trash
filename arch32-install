@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ArchLinux 32bit easy installer
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
-
+t
 # version
 VERSION='2.25.2'
 
