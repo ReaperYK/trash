@@ -2,7 +2,7 @@
 # ArchLinux 32bit easy installer
 # You must be using an Archlinux32 LiveCD for this script to run successfully.
 
-# true / false
+# true / false]
 TRUE=0 
 FALSE=1
 
