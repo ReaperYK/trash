@@ -789,9 +789,9 @@ pacman_pdl_setup()
    printf1 'Setting up /etc/pacman.conf'
    sed -i "s/#ParallelDownloads/ParallelDownloads/" "/mnt/etc/pacman.conf"
   else 
-     title 'Pacman > Parallel Download'
-     printf1 'Setting up /etc/pacman.conf'
-     sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
+    title 'Pacman > Parallel Download'
+    printf1 'Setting up /etc/pacman.conf'
+    sed -i "s/#ParallelDownloads/ParallelDownloads/" "/etc/pacman.conf"
   fi
 
   return $SUCCESS
