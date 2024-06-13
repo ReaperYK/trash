@@ -184,12 +184,6 @@ ctrl_c() {
     printf "\n\n"
     swapoff "$SWAP_PART" > /dev/null 2>&1
     exit $FAILURE
-  else
-    printf "\n"
-    CTRL_C_PROTECT=$FALSE
-    warn "To cancel the installation, press Ctrl+C again within 5 seconds"
-    animation "5"
-    CTRL_C_PROTECT=$TRUE
   fi
 }
 
@@ -354,7 +348,8 @@ check_env()
   
   if [ ! -e "/usr/bin/pacman" ];
   then
-    warn "You need to run this installer on an ArchLinux based OS that pacman can use! \n"
+    warn "/bin/pacman not found."
+    printf "\n"
   fi
 
   return $SUCCESS
@@ -553,9 +548,6 @@ update_pacman()
   sleep_clear 1
   
   pacman_pdl_setup
-  sleep_clear 1
-  
-  update_pkg_database
   sleep_clear 1
 
   return $SUCCESS
@@ -1232,11 +1224,6 @@ install_base_packages()
   pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
     terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
-  
-  printf "\n"
-  printf1 'Updating pacman database'
-  printf "\n\n"
-  chroot $CHROOT pacman -Syy --noconfirm --overwrite='*' 
 
   return $SUCCESS
 }
@@ -1245,13 +1232,31 @@ install_base_packages()
 # setup /etc/resolv.conf
 setup_resolvconf()
 {
+  if [ "$1" = "chroot" ]; then
   title 'Base System Setup > Etc'
 
-  printf1 'Setting up /etc/resolv.conf'
+  wprintf '[+] Setting up /etc/resolv.conf'
   printf "\n\n"
 
   mkdir -p "$CHROOT/etc/" 
   cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf" 
+  
+  if ! chroot /mnt curl -s $ASCII
+  then
+   echo "nameserver 8.8.8.8" >> /mnt/etc/resolv.conf
+   chroot /mnt curl -s $ASCII || {
+    err "Unable to connect to network on new system at chroot destination. Aborting."; exit $FAILURE; }
+  fi
+  
+  else
+  title 'Base System Setup > Etc'
+
+  printf1 'Setting up /etc/resolv.conf'
+  printf "\n\n"
+   
+  mkdir -p "$CHROOT/etc/" 
+  cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf" 
+  fi
 
   return $SUCCESS
 }
@@ -1524,7 +1529,7 @@ reinitialize_keyring()
   printf "\n\n"
   sleep 2
 
-  chroot $CHROOT pacman -Sy --overwrite='*' --noconfirm archlinux-keyring
+  chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring
     
 
   return $SUCCESS
@@ -1533,11 +1538,6 @@ reinitialize_keyring()
 # install extra (missing) packages
 setup_extra_packages()
 {
-  if [ "$LW_EXT_PACK" = "$TRUE" ]; then
-     LIGHTWEIGHT_PACKAGES_GROUP=$TRUE
-  fi
-
-  if [ "$LIGHTWEIGHT_PACKAGES_GROUP" != "$TRUE" ]; then
    arch='arch-install-scripts pkgfile'
    bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
    browser='chromium elinks firefox'
@@ -1563,37 +1563,9 @@ setup_extra_packages()
    xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau feh
    xf86-video-sisusb xf86-video-vesa xf86-video-vmware
    xf86-video-voodoo xorg-server xorg-xbacklight xorg-xinit xterm xorg-xlsfonts'
-  else
-   arch='arch-install-scripts pkgfile'
-   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
-   editor='nano'
-   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
-   filemanager=''
-   media=''
-   audio='alsa-utils pulseaudio pipewire'
-   hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
-   misc='acpi haveged hdparm htop inotify-tools irssi
-   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
-   unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
-   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
-   dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
-   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
-   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
-   xorg='xf86-video-amdgpu xf86-video-ati xorg-xclock
-   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
-   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
-   xf86-video-voodoo'
-  fi
-  
+
   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
   all="$all $misc $network $xorg $audio $media $filemanager"
-
-  sleep_clear 1
   
   title 'Base System Setup > Extra Packages'
   printf1 'Installing extra packages'
@@ -1620,8 +1592,12 @@ setup_extra_packages()
   printf "\n"
   sleep 1
 
-  chroot $CHROOT pacman -Sy --needed --overwrite='*' --noconfirm $all \
-  || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; setup_extra_packages; return $SUCCESS; }
+  chroot $CHROOT pacman -Sy --needed --overwrite='*' --noconfirm $all || { 
+    err "Install failed. You will have to redo it manually later.";
+    sleep 3; 
+    chroot /mnt pacman -S --noconfirm --needed --overwrite="*" grub os-prober efibootmgr dosfstools networkmanager iwd;
+    sleep_clear 1;
+    return $SUCCESS; }
 
   return $SUCCESS
 }
@@ -1660,7 +1636,7 @@ setup_base_system()
   install_base_packages
   sleep_clear 1
 
-  setup_resolvconf
+  setup_resolvconf chroot
   sleep_clear 1
   
   setup_fstab
@@ -1998,13 +1974,11 @@ setup_de()
 	
   title "Arch Linux Setup > Desktop Environment"
 
- 	printf1 "Installing $DE_TITLE"
+ 	printf1 "Setting up $DE_TITLE"
 	printf "\n\n"
 
-  CTRL_C_PROTECT=$TRUE
 	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm \
          || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; yes $choose_de | setup_de; return $SUCCESS; }
-  CTRL_C_PROTECT=$FALSE
 
 	chroot $CHROOT systemctl enable $DE_MAN
 	sleep 3
@@ -2204,16 +2178,6 @@ run_update_initramfs()
 
 }
 
-update_package()
-{
-  title "Game Over"
-  printf1 "Updating packages"
-  printf "\n\n"
-  chroot /mnt pacman -Syu --noconfirm --disable-download-timeout --overwrite="*"
-
-  return $SUCCESS
-}
-
 config_pacman_dl()
 {
   title 'Pacman Settings > Download Options'
@@ -2336,8 +2300,6 @@ main()
   sleep_clear 1
   
   # epilog
-  update_package
-  sleep_clear 1
   disable_sign_check 3
   sleep_clear 1
   run_update_initramfs
@@ -2441,9 +2403,6 @@ recovery_console() {
 launch() {
   if [ -z $option ]; then
    main
-  elif [ "$option" = "--help" ]; then
-   clear
-   show_help
   elif [ "$option" = "--console" ]; then
    clear
    recovery_console
