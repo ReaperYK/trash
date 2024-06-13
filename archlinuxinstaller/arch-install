@@ -804,7 +804,7 @@ update_keyring()
 
   printf1 'Initializing keyring'
 	printf "\n\n"
-	pacman -Sy archlinux-keyring --noconfirm
+	pacman -Syy archlinux-keyring --noconfirm
 	return $SUCCESS
 }
 
