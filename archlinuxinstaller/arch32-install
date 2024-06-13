@@ -1383,8 +1383,6 @@ reinitialize_keyring()
 
   printf1 'Reinitializing keyrings'
   printf "\n\n"
-  sleep 2
-
   chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring archlinux32-keyring
     
 
