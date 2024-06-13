@@ -1866,7 +1866,7 @@ run_strap_sh()
 disable_sign_check()
 {
 	title 'Pacman Settings > Signature Check'
-	printf1 'Setting up /etc/pacman.conf'
+	wprintf '[+] Setting up /etc/pacman.conf'
 	printf "\n\n"
 
 	if [ "$1" = "1" ]; then
