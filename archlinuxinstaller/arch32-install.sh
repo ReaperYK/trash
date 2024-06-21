@@ -1453,18 +1453,6 @@ setup_extra_packages()
   return $SUCCESS
 }
 
-
-ask_pacman_external_downloader() {
-  title "Pacman > External Downloader"
-  wprintf "[?] Use wget instead of pacman's built-in downloader [y/n]: "
-  read PACMANDL
-
-  if [ $PACMANDL = "y" ]
-  then
-   PACMANDL="WGET"
-  fi
-}
-
 # perform system base setup/configurations
 setup_base_system()
 {
@@ -1647,9 +1635,6 @@ run_strap_sh()
     { err "Wrong SHA1 sum for strap.sh: $sha1 (orig: $orig_sha1). Aborting!"; exit $FAILURE; }
   fi
   
-  printf "\n"
-  printf1 'Reinitializing keyrings'
-	printf "\n\n"
 	chroot $CHROOT pacman -Sy archlinux-keyring blackarch-keyring --noconfirm
 
   return $SUCCESS
