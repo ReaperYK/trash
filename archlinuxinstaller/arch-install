@@ -413,8 +413,8 @@ set_locale()
     LOCALE='ja_JP.UTF-8'
   fi
 
-  localectl set-locale "LANG=$LOCALE"
-  check $? 'setting locale'
+#  localectl set-locale "LANG=$LOCALE"
+#  check $? 'setting locale'
 
   return $SUCCESS
 }
@@ -1221,9 +1221,15 @@ install_base_packages()
   warn 'This can take a while, please wait...'
   printf "\n\n"
   
-  pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
+  if [ "$USE_LINUX_LTS" = "$TRUE" ]; then
+  pacstrap $CHROOT base base-devel btrfs-progs linux-lts linux-firmware git \
     terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
+  else 
+    pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
+    terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
+   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
+  fi
 
   return $SUCCESS
 }
@@ -1547,7 +1553,13 @@ setup_extra_packages()
    media='ffmpeg yt-dlp mpv'
    audio='alsa-utils pulseaudio pipewire pavucontrol'
    hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
+  
+   if [ "$USE_LINUX_LTS" = $TRUE ]; then
+    kernel='linux-lts-headers'
+   else
+    kernel='linux-headers'
+   fi
+
    misc='acpi git haveged hdparm htop inotify-tools ipython irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
