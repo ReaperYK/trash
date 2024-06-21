@@ -1896,8 +1896,8 @@ fi
 }
 
 ask_de_setup() {
-  title "Arch Linux Setup > Desktop Envrionment"
-  printf "[?] Setup desktop environment [y/n]: "
+  title "Arch Linux Setup > Desktop"
+  printf "[?] Setup desktop environment (GNOME, KDE, LXDE) [y/n]: "
   read ASK_DE
   
   if [ "$ASK_DE" = "y" ]; then
@@ -1911,7 +1911,7 @@ ask_de_setup() {
 # select desktop environmrnt
 setup_de()
 {
-  title "Arch Linux Setup > Desktop Environment"
+  title "Arch Linux Setup > Desktop"
   printf "
   1. KDE Plasma
   2. GNOME
@@ -1950,7 +1950,7 @@ setup_de()
 
   sleep_clear 1
 	
-  title "Arch Linux Setup > Desktop Environment"
+  title "Arch Linux Setup > Desktop"
 
  	printf1 "Setting up $DE_TITLE"
 	printf "\n\n"
