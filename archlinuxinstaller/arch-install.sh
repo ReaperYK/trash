@@ -1547,7 +1547,7 @@ setup_extra_packages()
    browser='chromium elinks firefox'
    editor='hexedit nano vim mousepad'
    filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted'
+   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted os-prober grub'
    filemanager='thunar ark dolphin'
    media='ffmpeg yt-dlp mpv'
    audio='pipewire-alsa pipewire-pulse pavucontrol'
@@ -1561,7 +1561,7 @@ setup_extra_packages()
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
    unzip upower usb_modeswitch usbutils zip fcitx5-im fcitx5-mozc python 
-   jre-openjdk docker kotlin ruby cmake curl dkms python-pip os-prober grub'
+   ruby cmake curl python-pip'
    fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji noto-fonts-emoji noto-fonts noto-fonts-cjk noto-fonts-extra'
    network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd dialog
    dnscrypt-proxy dnsmasq dnsutils fwbuilder iw networkmanager
