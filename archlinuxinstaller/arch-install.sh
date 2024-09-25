@@ -227,12 +227,7 @@ rprintf()
 {
   printf "\033[41m%s\033[0m" "$@"
 }
-
-gprintf()
-{
-  printf "\033[32m%s\033[0m" "$@"
-}
-
+ 
 # print warning
 warn()
 {
