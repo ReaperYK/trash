@@ -166,8 +166,6 @@ LIGHTWEIGHT_PACKAGES_GROUP=$FALSE
 
 ASK_BLACKARCH_SETUP=""
 
-operation=""
-
 BLACKARCH_SETUP=$FALSE
 
 if [ "$1" = "--adv-option" ]; then
