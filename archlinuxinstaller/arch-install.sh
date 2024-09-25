@@ -1226,7 +1226,6 @@ install_base_packages()
   return $SUCCESS
 }
 
-
 # setup /etc/resolv.conf
 setup_resolvconf()
 {
