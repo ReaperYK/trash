@@ -448,9 +448,9 @@ set_keymap()
   if [ -z "$KEYMP" ]
   then
     echo
-    warn 'Setting default keymap: Japanese'
+    warn 'Setting default keymap: us'
     sleep 1
-    KEYMAP='jp106'
+    KEYMAP='us'
   fi
   localectl set-keymap --no-convert "$KEYMAP"
   loadkeys "$KEYMAP"
