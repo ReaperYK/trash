@@ -126,9 +126,8 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 
 # default ArchLinux repository URL
 AR_REPO_URL='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
-AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany 
-AR_REPO_URL3='https://mirrors.cat.net/archlinux/$repo/os/$arch' # Japan
-
+AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' #
+AR_REPO_URL3='https://mirrors.cat.net/archlinux/$repo/os/$arch' #
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -1551,15 +1550,13 @@ setup_extra_packages()
    gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage gparted'
    filemanager='thunar ark dolphin'
    media='ffmpeg yt-dlp mpv'
-   audio='alsa-utils pulseaudio pipewire pavucontrol'
+   audio='pipewire-alsa pipewire-pulse pavucontrol'
    hardware='amd-ucode intel-ucode'
-  
    if [ "$USE_LINUX_LTS" = $TRUE ]; then
     kernel='linux-lts-headers'
    else
     kernel='linux-headers'
    fi
-
    misc='acpi git haveged hdparm htop inotify-tools ipython irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
@@ -1824,8 +1821,8 @@ setup_mirrorlist()
     echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
-    echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
+    echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
   fi
 }
 
@@ -1897,7 +1894,7 @@ fi
 
 ask_de_setup() {
   title "Arch Linux Setup > Desktop"
-  printf "[?] Setup desktop environment (GNOME, KDE, LXDE) [y/n]: "
+  printf "[?] Setup desktop (GNOME, KDE, LXDE) [y/n]: "
   read ASK_DE
   
   if [ "$ASK_DE" = "y" ]; then
@@ -1908,7 +1905,7 @@ ask_de_setup() {
 
 }
 
-# select desktop environmrnt
+# select desktop
 setup_de()
 {
   title "Arch Linux Setup > Desktop"
@@ -1955,8 +1952,7 @@ setup_de()
  	printf1 "Setting up $DE_TITLE"
 	printf "\n\n"
 
-	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm \
-         || { err "Install failed. Will try again..."; sleep 3; rm /mnt/var/lib/pacman/db.lck; clear; yes $choose_de | setup_de; return $SUCCESS; }
+	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm
 
 	chroot $CHROOT systemctl enable $DE_MAN
 	sleep 3
@@ -2055,7 +2051,7 @@ setup_extrasystem()
   update_etc
   sleep_clear 1
 
-  if [ $LANGUAGE = 2 ]; then
+  if [ $LOCALE = "ja_JP.UTF-8" ]; then
    setup_im
    sleep_clear 1
   fi
@@ -2179,7 +2175,7 @@ main()
   check_env
   
   setfont ter-114n || {
-    warn "Could not change font to Terminus";
+    warn "Could not change font ";
     printf "\n";
   }
   # locale
@@ -2291,105 +2287,8 @@ main()
   return $SUCCESS
 }
 
-show_help() {
-  title "Help"
-  wprintf "[+] ArchLinux Easy Installer $VERSION"
-  printf "\n\n"
-}
-
-recovery_console() {
-  while [ "$operation" != "exit" ]; 
-  do
-  title 'Recovery Mode'
-  warn "This is used in case of problems or to test various functions."
-  printf "\n"
-  printf "
-  1. Install base packages (File system must already be mounted)
-  2. Mount /sys, /proc, /dev to enable use of pacman and mkinitcpio
-  3. Install extra packages
-  4. Enable lightweight additional packages
-  5. Enable Force UEFI mode
-  6. Delete EFI information and grub recorded at the beginning of the drive"
-
-  printf "\n\n"
-  printf "[?] Enter number [exit]: "
-  read -r operation
-  echo
-
-  if [ "$operation" = "1" ]; then
-   disable_sign_check 1
-   setup_resolvconf
-   pacstrap "/mnt" base base-devel btrfs-progs linux linux-firmware git terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
-   { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
-   chroot /mnt pacman -Syy --noconfirm
-   setup_resolvconf
-  elif [ "$operation" = "2" ]; then
-   mkdir -p "${CHROOT}/"{proc,sys,dev} 
-   mount -t proc proc "$CHROOT/proc" 
-   mount --rbind /sys "$CHROOT/sys" 
-   mount --make-rslave "$CHROOT/sys" 
-   mount --rbind /dev "$CHROOT/dev" 
-   mount --make-rslave "$CHROOT/dev" 
-  elif [ "$operation" = "3" ]; then
-   arch='arch-install-scripts pkgfile'
-   bluetooth='bluez bluez-hid2hci bluez-tools bluez-utils'
-   browser=''
-   editor='nano'
-   filesystem='cifs-utils dmraid exfat-utils f2fs-tools efibootmgr dosfstools
-   gpart gptfdisk mtools nilfs-utils ntfs-3g partclone parted partimage'
-   filemanager=''
-   media=''
-   audio='alsa-utils pulseaudio pipewire'
-   hardware='amd-ucode intel-ucode'
-   kernel='linux-headers'
-   misc='acpi haveged hdparm htop inotify-tools irssi
-   linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
-   screen smartmontools strace tmux udisks2 unace unrar grub os-prober
-   unzip upower usb_modeswitch usbutils zip python curl audiocd-kio cdrtools cdrdao dvd+rw-tools'
-   fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji ttf-sazanami'
-   network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd
-   dnscrypt-proxy dnsmasq dnsutils iw networkmanager fwbuilder
-   iwd lftp nfs-utils ntp openconnect openssh openvpn ppp pptpclient rfkill
-   rp-pppoe socat vpnc wireless_tools wpa_supplicant wvdial xl2tpd'
-   xorg='xf86-video-amdgpu xf86-video-ati xorg-xclock
-   xf86-video-dummy xf86-video-fbdev xf86-video-intel xf86-video-nouveau
-   xf86-video-sisusb xf86-video-vesa xf86-video-vmware
-   xf86-video-voodoo'
-   all="$arch $bluetooth $browser $editor $filesystem $fonts $hardware $kernel"
-   all="$all $misc $network $xorg $audio $media $filemanager"
-   chroot /mnt pacman -S --noconfirm --overwrite="*" --needed $all
-   elif [ "$operation" = "4" ]; then
-    LW_EXT_PACK=$TRUE
-    main
-   elif [ "$operation" = "5" ]; then
-    FORCE_UEFI=$TRUE
-    main
-   elif [ "$operation" = "6" ]; then
-    echo
-    warn "This operation will destroy the disk's data and partition table"
-    echo "[?] Enter drive name [example: /dev/sda]: "
-    read -r erase_disk_device
-    dd if="/dev/zero" of="$erase_disk_device" count=300 bs=3MB status=progress
-  fi
-  done
-
-  return $SUCCESS
-}
-
-
-
-launch() {
-  if [ -z $option ]; then
-   main
-  elif [ "$option" = "--console" ]; then
-   clear
-   recovery_console
-  fi
-}
-
 # we start here
-option="$1"
-launch
+main
 
 # EOF
 
