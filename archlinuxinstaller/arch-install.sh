@@ -770,7 +770,7 @@ check_inet_conn()
 
   if ! curl -s $ASCII
   then
-   if ! curl -s https://yahoo.com
+   if ! curl -s https://yahoo.com/
    then
     err 'No Internet connection! Check your network (settings).'
     exit $FAILURE
