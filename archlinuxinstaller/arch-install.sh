@@ -154,6 +154,8 @@ BOOT_MODE=''
 # ascii art
 ASCII='https://raw.githubusercontent.com/ReaperYK/trash/main/otherfile/rinuaa.txt'
 
+# blackarch linux setup
+ASK_BLACKARCH_SETUP="n"
 BLACKARCH_SETUP=$FALSE
 
 reflector_country=""
@@ -1719,7 +1721,7 @@ update_etc()
   printf "\n"
   
    if [ "$LOCALE"  = "ja_JP.UTF-8" ]; then
-     echo "$config_content" | tee -a "/mnt/etc/fonts/local.conf" > /dev/null
+    echo "$config_content" | tee -a "/mnt/etc/fonts/local.conf" > /dev/null
    fi
 
   return $SUCCESS
@@ -1746,13 +1748,13 @@ ask_blackarch_mirror_setup()
 {
   title "ArchLinux Setup > BlackArch Mirror / keyring Setup"
   wprintf '[?] Setup BlackArch keyring and mirror server [y/n] [If you are not sure, press "n"]: '
-  read ASK_BLACKARCH_SETUP
+  read -r ASK_BLACKARCH_SETUP
 
   if [ "$ASK_BLACKARCH_SETUP" = "y" ]; then
    BLACKARCH_SETUP=$TRUE
   fi
 
-  return 0
+  return $SUCCESS
 }
 
 # ask for BlackArch Linux lmirror
