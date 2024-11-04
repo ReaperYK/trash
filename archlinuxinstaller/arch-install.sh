@@ -1226,7 +1226,7 @@ setup_resolvconf()
     err "Unable to connect to network on new system at chroot destination. Aborting."; exit $FAILURE; }
   fi
 
-  chroot /mnt pacman -Syy --noconfirm --overwrite=*"
+  chroot /mnt pacman -Syy --noconfirm --overwrite="*"
   
   else
   title 'Base System Setup > Etc'
