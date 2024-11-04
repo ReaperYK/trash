@@ -1394,6 +1394,10 @@ setup_bootloader()
 {
   title 'Base System Setup > Boot Loader'
 
+  # common
+  sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
+  sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
+  
   if [ "$BOOT_MODE" = 'uefi' ] && [ "$PART_LABEL" = 'gpt' ]
   then
     printf1 'Setting up GRUB (EFI) boot loader'
@@ -1410,11 +1414,9 @@ setup_bootloader()
     echo "GRUB_BACKGROUND=\"/boot/grub/splash.png\"" >> \
       "$CHROOT/etc/default/grub"
 
-    sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
-    sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
     echo
 
-    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id="archlinux" --recheck
+    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --boot-directory=/boot --bootloader-id="archlinux" --recheck
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
   else
     printf1 'Setting up GRUB boot loader'
@@ -1432,13 +1434,12 @@ setup_bootloader()
       "$CHROOT/etc/default/grub"
     echo
 
-    sed -i 's/#GRUB_COLOR_/GRUB_COLOR_/g' "$CHROOT/etc/default/grub"
-    sed -i "s/#GRUB_DISABLE_OS_PROBER/GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
-
-    chroot $CHROOT grub-install --target=i386-pc --recheck "$HD_DEV" 
+    chroot $CHROOT grub-install --target=i386-pc --boot-directory=/boot --recheck "$HD_DEV" 
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
 
   fi
+
+  sed -i "s/GRUB_DISABLE_OS_PROBER/#GRUB_DISABLE_OS_PROBER/g" "/mnt/etc/default/grub"
 
   return $SUCCESS
 }
@@ -1681,14 +1682,44 @@ enable_iwd_networkmanager()
   return $SUCCESS
 }
 
-
 # update /etc files and set up iptables
 update_etc()
 {
+  config_content='<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>serif</string>
+    </test>
+    <edit name="family" mode="assign" binding="strong">
+      <string>Noto Serif CJK JP</string>
+    </edit>
+  </match>
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>sans-serif</string>
+    </test>
+    <edit name="family" mode="assign" binding="strong">
+      <string>Noto Sans CJK JP</string>
+    </edit>
+  </match>
+  <match target="pattern">
+    <test name="family" compare="eq">
+      <string>monospace</string>
+    </test>
+    <edit name="family" mode="assign" binding="strong">
+      <string>Noto Mono</string>
+    </edit>
+  </match>
+</fontconfig>'
+
   title "Arch Linux Setup > Etc files"
 
   printf1 'Updating /etc files'
   printf "\n\n"
+
+
 
   return $SUCCESS
 }
