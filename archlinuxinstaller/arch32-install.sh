@@ -1566,22 +1566,6 @@ setup_im()
 
 setup_mirrorlist()
 {
-   local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
-
-  if confirm 'Pacman Setup > ArchLinux Mirrorlist' \
-    "[+] Worldwide mirror will be used\n\n[?] Look for the best server [y/n]: "
-  then
-    printf "\n"
-    warn 'This may take time depending on your connection'
-    printf "\n"
-    $mirrold
-    pacman -Sy --noconfirm
-    pacman -S --needed --noconfirm reflector
-    yes | pacman -Scc
-    reflector --verbose --latest 5 --protocol https --sort rate \
-      --save /etc/pacman.d/mirrorlist
-  else
-    printf "\n"
     warn 'Using Worldwide mirror server'
     $mirrold
     echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
