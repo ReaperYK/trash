@@ -1715,11 +1715,12 @@ update_etc()
 </fontconfig>'
 
   title "Arch Linux Setup > Etc files"
-
-  printf1 'Updating /etc files'
-  printf "\n\n"
-
-
+  wprintf '[+] Updating /etc files'
+  printf "\n"
+  
+   if [ "$LOCALE"  = "ja_JP.UTF-8" ]; then
+  echo "$config_content" | tee -a "/mnt/etc/fonts/local.conf" > /dev/null
+  fi
 
   return $SUCCESS
 }
@@ -1728,7 +1729,7 @@ update_etc()
 setup_im()
 {
   title "Arch Linux Setup > Fcitx5 Setup"
-  printf1 'Setting up /etc/environment'
+  wprintf '[+] Setting up /etc/environment'
 
   cp "/etc/environment" "/mnt/etc"
   chroot $CHROOT sed -i '5a GTK_IM_MODULE=fcitx5' "/etc/environment"
