@@ -113,7 +113,7 @@ CHROOT='/mnt'
 NORMAL_USER=''
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+AR_REPO_URL='https://mirror.archlinux32.org//os/$arch' # Worldwide
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -211,11 +211,6 @@ wprintf()
 rprintf()
 {
   printf "\033[41m%s\033[0m" "$@"
-}
-
-gprintf()
-{
-  printf "\033[32m%s\033[0m" "$@"
 }
 
 # print warning
@@ -1592,8 +1587,6 @@ setup_mirrorlist()
     echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
-    echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
-    echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
   fi
 }
 

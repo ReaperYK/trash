@@ -125,9 +125,10 @@ BA_REPO_URL='https://ftp.halifax.rwth-aachen.de/blackarch/$repo/os/$arch' # Germ
 #BA_REPO_URL='https://blackarch.cs.nycu.edu.tw/$repo/os/$arch' # Taiwan
 
 # default ArchLinux repository URL
-AR_REPO_URL='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
-AR_REPO_URL2='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' #
-AR_REPO_URL3='https://mirrors.cat.net/archlinux/$repo/os/$arch' #
+AR_REPO_URL='https://geo.mirror.pkgbuild.com/$repo/os/$arch' # Worldwide
+AR_REPO_URL2='https://mirror.rackspace.com/archlinux/$repo/os/$arch' # Worldwide
+AR_REPO_URL3='https://ftp.halifax.rwth-aachen.de/archlinux/$repo/os/$arch' # Germany
+
 
 # X (display + window managers ) setup - default: false
 #X_SETUP=$FALSE
@@ -153,35 +154,16 @@ BOOT_MODE=''
 # ascii art
 ASCII='https://raw.githubusercontent.com/ReaperYK/trash/main/otherfile/rinuaa.txt'
 
-# activate advaneced ask (default=FALSE)
-USE_ADV_ASK=$FALSE
-
-# activate /var /tmp /opt /srv /home
-USE_ADV_PART=$FALSE
-
-# Exit on CTRL + C
-CTRL_C_PROTECT=$FALSE
-
-LIGHTWEIGHT_PACKAGES_GROUP=$FALSE
-
-ASK_BLACKARCH_SETUP=""
-
 BLACKARCH_SETUP=$FALSE
 
-if [ "$1" = "--adv-option" ]; then
-  USE_ADV_ASK=$TRUE
-else
-  USE_ADV_ASK=$FALSE
-fi
+reflector_country=""
 
 ctrl_c() {
-  if [ $CTRL_C_PROTECT != "$TRUE" ]; then
     printf "\n"
     err 'Installation canceled! leaving...'
-    printf "\n\n"
+    printf "\n"
     swapoff "$SWAP_PART" > /dev/null 2>&1
     exit $FAILURE
-  fi
 }
 
 trap ctrl_c 2
@@ -223,11 +205,6 @@ wprintf()
   return $SUCCESS
 }
 
-rprintf()
-{
-  printf "\033[41m%s\033[0m" "$@"
-}
- 
 # print warning
 warn()
 {
@@ -995,7 +972,7 @@ ask_formatting()
   while [ "$CHECK_FMT" != "y" ]
   do
   title 'Hard Drive Setup > Partition Formatting'
-  rprintf '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
+  wprintf '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
   read CHECK_FMT
   if [ "$CHECK_FMT" = "y" ]
   then
@@ -1170,6 +1147,7 @@ umount_filesystems()
 
     umount -Rf /mnt > /dev/null 2>&1; \
     umount -Rf "$HD_DEV"{1..128} > /dev/null 2>&1 # gpt max - 128
+    cryptsetup luksClose /dev/mapper/"$CRYPT_ROOT" 2>&1
   else
     title 'Game Over'
 
@@ -1799,14 +1777,23 @@ setup_mirrorlist()
     "[+] Worldwide mirror will be used\n\n[?] Look for the best server [y/n]: "
   then
     printf "\n"
+    wprintf '[?] Specify the country of the mirror server (for example: "United States","Canada","Japan","China","Korea") [Enter to set as Default]: '
+    read -r reflector_country
+    if [ -z "$reflector_country" ]; then
+     warn "Set to Default(EU)."
+     printf "\n"
+     reflector_country=""
+    fi
+
+    printf "\n"
     warn 'This may take time depending on your connection'
     printf "\n"
     $mirrold
     pacman -Sy --noconfirm
     pacman -S --needed --noconfirm reflector
     yes | pacman -Scc
-    reflector --verbose --latest 5 --protocol https --sort rate \
-      --save /etc/pacman.d/mirrorlist
+    reflector --verbose --latest 5 -c "$reflector_country" --protocol https --sort rate \
+      --save /etc/pacman.d/mirrorlist || { err "mirror setup failed. Aborting..."; exit 1; }
   else
     printf "\n"
     warn 'Using Worldwide mirror server'
@@ -1938,17 +1925,10 @@ setup_de()
   choose_de=1
   fi
 
-  sleep_clear 1
-	
-  title "Arch Linux Setup > Desktop"
-
- 	printf1 "Setting up $DE_TITLE"
-	printf "\n\n"
-
 	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm
-
-	chroot $CHROOT systemctl enable $DE_MAN
-	sleep 3
+	
+  chroot $CHROOT systemctl enable $DE_MAN
+	sleep 1
 
 	return $SUCCESS
 }
