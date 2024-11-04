@@ -1719,7 +1719,7 @@ update_etc()
   printf "\n"
   
    if [ "$LOCALE"  = "ja_JP.UTF-8" ]; then
-  echo "$config_content" | tee -a "/mnt/etc/fonts/local.conf" > /dev/null
+     echo "$config_content" | tee -a "/mnt/etc/fonts/local.conf" > /dev/null
    fi
 
   return $SUCCESS
