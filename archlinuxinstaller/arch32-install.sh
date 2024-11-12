@@ -1571,7 +1571,6 @@ setup_mirrorlist()
     echo -e "## Arch Linux repository Worldwide mirrorlist\n\n" \
       > /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
-  fi
 }
 
 # pass correct config
@@ -1902,7 +1901,7 @@ main()
     echo
     warn "This message will not be displayed again."
     echo
-    read -p "Please return to contniue."
+    read -p 'Please return to contniue.'
     mkdir -p /tmp/arch-install
     touch /tmp/arch-install/first_boot
 
