@@ -498,12 +498,21 @@ enable_pacman_color()
 # update pacman package database
 update_pkg_database()
 {
-  title 'Pacman Setup > Package Database'
+  if [ "$1" = "chroot" ]; then
+   title 'Pacman Setup > Package Database'
 
-  printf1 'Updating pacman database'
-  printf "\n\n"
+   printf1 'Updating pacman database'
+   printf "\n\n"
 
-  pacman -Syy --noconfirm
+   pacman -Syy --noconfirm
+  else
+   title 'Pacman Setup > Package Database'
+
+   printf1 'Updating pacman database'
+   printf "\n\n"
+
+   chroot /mnt pacman -Syy --noconfirm
+  fi
 
   return $SUCCESS
 }
@@ -1195,11 +1204,11 @@ install_base_packages()
   
   if [ "$USE_LINUX_LTS" = "$TRUE" ]; then
   pacstrap $CHROOT base base-devel btrfs-progs linux-lts linux-firmware git \
-    terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
+    terminus-font zsh-completions grml-zsh-config wget aria2 reflector --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
   else 
     pacstrap $CHROOT base base-devel btrfs-progs linux linux-firmware git \
-    terminus-font zsh-completions grml-zsh-config wget aria2 --disable-download-timeout ||
+    terminus-font zsh-completions grml-zsh-config wget aria2 reflector --disable-download-timeout ||
    { err "Unable to install base system (wrong file system or mirror server problem?)"; exit $FAILURE; }
   fi
 
@@ -1509,12 +1518,11 @@ reinitialize_keyring()
   printf1 'Reinitializing keyrings'
   printf "\n\n"
 
-  chroot $CHROOT pacman -Syy --overwrite='*' --noconfirm archlinux-keyring
+  chroot $CHROOT pacman -S --overwrite='*' --noconfirm archlinux-keyring
     
 
   return $SUCCESS
 }
-
 # install extra (missing) packages
 setup_extra_packages()
 {
@@ -1656,6 +1664,11 @@ else
 
   pacman_pdl_setup chroot
   sleep_clear 1
+  
+  if [ -n "$reflector_country" ]; then
+   setup_reflector
+   sleep_clear 1
+  fi
   
   reinitialize_keyring
   sleep_clear 1
@@ -1807,18 +1820,18 @@ ask_mirror()
 
 setup_mirrorlist()
 {
-   local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
+  local mirrold='cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup'
 
   if confirm 'Pacman Setup > ArchLinux Mirrorlist' \
     "[+] Worldwide mirror will be used\n\n[?] Look for the best server [y/n]: "
   then
     printf "\n"
-    wprintf '[?] Specify the country of the mirror server (for example: "United States","Canada","Japan","China","Korea") [Enter to set as Default]: '
+    wprintf '[?] Specify the country of the mirror server (for example: "United States","Canada","Japan","China","Korea","Gernamny,Japan") [Enter to set as Default]: '
     read -r reflector_country
     if [ -z "$reflector_country" ]; then
-     warn "Set to Default(EU)."
+     warn "Set to Default."
      printf "\n"
-     reflector_country=""
+     reflector_country="France,Germany"
     fi
 
     printf "\n"
@@ -1839,6 +1852,21 @@ setup_mirrorlist()
     echo "Server = $AR_REPO_URL" >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL2" >> /etc/pacman.d/mirrorlist
     echo "Server = $AR_REPO_URL3" >> /etc/pacman.d/mirrorlist
+  fi
+}
+
+setup_reflector() {
+  if confirm 'Pacman Setup > Reflector' \
+    "[?] Enable reflector.service to automatically update mirrors [y/n]: "
+  then
+   printf "\n"
+   wprintf "[+] Enabling reflector"
+   printf "\n"
+   echo "--country $reflector_country" >> /mnt/etc/xdg/reflector/reflector.conf
+   chroot /mnt systemctl enable reflector.service
+   chroot /mnt systemctl enable reflector.timer
+   chroot /mnt reflector --verbose --latest 5 -c "$reflector_country" --protocol https --sort rate \
+      --save /etc/pacman.d/mirrorlist
   fi
 }
 
