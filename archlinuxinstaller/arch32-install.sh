@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # ArchLinux 32bit easy installer
-# You must be using an Archlinux32 LiveCD for this script to run successfully.
  
 # true / false
 TRUE=0 
@@ -1895,13 +1894,15 @@ main()
   show_notice() {
     title "Welcome > Notice"
     echo '
-    Please note that the 32bit installer is currently in prototype stage and may have additional issues. This installer must be booted from the ArchLinux32 DVD in legacy BIOS mode. Please note that it will not work if you try to install it from a regular 64bit ArchLinux.
+    Please note that the 32bit installer is currently in prototype stage and may have additional issues. 
+    This installer must be booted from the ArchLinux32 DVD in legacy BIOS mode. Please note that it will not work if you try to install it from a regular 64bit ArchLinux.
     You can download the ISO here:
     https://archlinux32.org/download'
     echo
     warn "This message will not be displayed again."
     echo
-    read -p 'Please return to contniue.'
+    echo
+    read -p '[+] Please return to contniue.'
     mkdir -p /tmp/arch-install
     touch /tmp/arch-install/first_boot
 
