@@ -1908,7 +1908,7 @@ main()
     return "$SUCCESS"
   }
 
-  if [ -f "/tmp/arch-install/first_boot" ]; then
+  if [ ! -e "/tmp/arch-install/first_boot" ]; then
    show_notice
    sleep_clear 1
   fi
