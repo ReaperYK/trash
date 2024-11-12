@@ -1892,6 +1892,28 @@ main()
     warn "Could not change font to Terminus";
     printf "\n";
   }
+
+  show_notice() {
+    title "Welcome > Notice"
+    echo '
+    Please note that the 32bit installer is currently in prototype stage and may have additional issues. This installer must be booted from the ArchLinux32 DVD in legacy BIOS mode. Please note that it will not work if you try to install it from a regular 64bit ArchLinux.
+    You can download the ISO here:
+    https://archlinux32.org/download'
+    echo
+    warn "This message will not be displayed again."
+    echo
+    read -p "Please return to contniue."
+    mkdir -p /tmp/arch-install
+    touch /tmp/arch-install/first_boot
+
+    return "$SUCCESS"
+  }
+
+  if [ -z "/tmp/arch-install/first_boot" ]; then
+   show_notice
+   sleep_clear 1
+  fi
+
   # locale
   set_locale
   sleep_clear 0
