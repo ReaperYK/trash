@@ -1420,7 +1420,7 @@ setup_bootloader()
 
     if [ $LUKS = $TRUE ]
     then
-      sed -i "s|loglevel=3 quiet|cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
+      sed -i "s|loglevel=3 quiet|loglevel=3 quiet cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
         "$CHROOT/etc/default/grub"
     fi
 
@@ -1439,7 +1439,7 @@ setup_bootloader()
 
     if [ $LUKS = $TRUE ]
     then
-      sed -i "s|loglevel=3 quiet|cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
+      sed -i "s|loglevel=3 quiet|loglevel=3 quiet cryptdevice=UUID=$uuid:$CRYPT_ROOT root=/dev/mapper/$CRYPT_ROOT|" \
         "$CHROOT/etc/default/grub"
     fi
 
@@ -1673,7 +1673,7 @@ else
   reinitialize_keyring
   sleep_clear 1
   
-  disable_sign_check 2
+  pacman_sign_check 2
   sleep_clear 1
 
   setup_extra_packages
@@ -1916,7 +1916,7 @@ run_strap_sh()
 
 
 # temporarily disable pacman signature check
-disable_sign_check()
+pacman_sign_check()
 {
 	title 'Pacman Settings > Signature Check'
 	wprintf '[+] Setting up /etc/pacman.conf'
@@ -2291,7 +2291,7 @@ main()
   sleep_clear 1
 
   # truble fixing
-  disable_sign_check 1
+  pacman_sign_check 1
   sleep_clear 1
 
   setup_mirrorlist
@@ -2311,7 +2311,7 @@ main()
   sleep_clear 1
   
   # epilog
-  disable_sign_check 3
+  pacman_sign_check 3
   sleep_clear 1
   run_update_initramfs
   sleep_clear 1
