@@ -8,7 +8,7 @@
 ################################################################################
 
 # version
-VERSION='2.26.0'
+VERSION='2.26.1'
 
 # true / false
 TRUE=0
@@ -982,10 +982,8 @@ ask_formatting()
 {
   while [ "$CHECK_FMT" != "y" ]
   do
-  title 'Hard Drive Setup > Partition Formatting'
-  wprintf '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
-  read CHECK_FMT
-  if [ "$CHECK_FMT" = "y" ]
+  if confirm 'Hard Drive Setup > Partition Formatting' \
+  '[?] Formatting partitions. Are you sure? No crying afterwards? [y/n]: '
   then
     break
   else
@@ -1536,15 +1534,11 @@ setup_extra_packages()
    media='ffmpeg yt-dlp mpv'
    audio='pipewire-alsa pipewire-pulse pavucontrol'
    hardware='amd-ucode intel-ucode'
-   if [ "$USE_LINUX_LTS" = $TRUE ]; then
-    kernel='linux-lts-headers'
-   else
-    kernel='linux-headers'
-   fi
+   kernel='linux-headers'
    misc='acpi git haveged hdparm htop inotify-tools ipython irssi
    linux-atm lsof mercurial mesa mlocate moreutils p7zip rsync neofetch lsb-release
    rtorrent screen scrot smartmontools strace tmux udisks2 unace unrar
-   unzip upower usb_modeswitch usbutils zip fcitx5-im fcitx5-mozc python 
+   unzip upower usb_modeswitch usbutils zip python 
    ruby cmake curl python-pip'
    fonts='ttf-dejavu ttf-indic-otf ttf-liberation xorg-fonts-misc unicode-emoji noto-fonts-emoji noto-fonts noto-fonts-cjk noto-fonts-extra'
    network='atftp bind-tools bridge-utils darkhttpd dhclient dhcpcd dialog
@@ -1745,14 +1739,16 @@ update_etc()
 # setting up fcitx5
 setup_im()
 {
-  title "Arch Linux Setup > Fcitx5 Setup"
-  wprintf '[+] Setting up /etc/environment'
-
-  cp "/etc/environment" "/mnt/etc"
-  chroot $CHROOT sed -i '5a GTK_IM_MODULE=fcitx5' "/etc/environment"
-  chroot $CHROOT sed -i '6a QT_IM_MODULE=fcitx5' "/etc/environment"
-  chroot $CHROOT sed -i '7a XMODIFIERS=@im=fcitx5' "/etc/environment"
-  printf "\n"
+  if confirm 'Arch Linux Setup > Fcitx5 Setup' \
+   "[?] Setup fcitx5 and mozc [y/n]: "
+  then
+   chroot /mnt pacman -S --needed --noconfirm  fcitx5-im fcitx5-mozc 
+   cp "/etc/environment" "/mnt/etc"
+   chroot $CHROOT sed -i '5a GTK_IM_MODULE=fcitx5' "/etc/environment"
+   chroot $CHROOT sed -i '6a QT_IM_MODULE=fcitx5' "/etc/environment"
+   chroot $CHROOT sed -i '7a XMODIFIERS=@im=fcitx5' "/etc/environment"
+   printf "\n"
+  fi
 
   sleep 1
 
@@ -1761,11 +1757,9 @@ setup_im()
 
 ask_blackarch_mirror_setup()
 {
-  title "ArchLinux Setup > BlackArch Mirror / keyring Setup"
-  wprintf '[?] Setup BlackArch keyring and mirror server [y/n] [If you are not sure, press "n"]: '
-  read -r ASK_BLACKARCH_SETUP
-
-  if [ "$ASK_BLACKARCH_SETUP" = "y" ]; then
+  if confirm "ArchLinux Setup > BlackArch Mirror / keyring Setup" \
+   '[?] Setup BlackArch keyring and mirror server [y/n] [If you are not sure, press "n"]: '
+  then
    BLACKARCH_SETUP=$TRUE
   fi
 
@@ -1868,6 +1862,9 @@ setup_reflector() {
    chroot /mnt reflector --verbose --latest 5 -c "$reflector_country" --protocol https --sort rate \
       --save /etc/pacman.d/mirrorlist
   fi
+
+  sleep 1
+  return "$SUCCESS"
 }
 
 # pass correct config
@@ -1937,11 +1934,9 @@ fi
 }
 
 ask_de_setup() {
-  title "Arch Linux Setup > Desktop"
-  printf "[?] Setup desktop (GNOME, KDE, LXDE) [y/n]: "
-  read ASK_DE
-  
-  if [ "$ASK_DE" = "y" ]; then
+  if confirm "Arch Linux Setup > Desktop" \
+   "[?] Setup desktop (GNOME, KDE, LXDE) [y/n]: "
+  then
    DE_SETUP=$TRUE
   else
    DE_SETUP=$FALSE
@@ -1986,7 +1981,6 @@ setup_de()
 	DE_EXTPKG='kde-applications spectacle'
 	DE_MAN='sddm'
   DE_TITLE='KDE Plasma'
-  choose_de=1
   fi
 
 	chroot $CHROOT pacman -S $DE_MAIN $DE_EXTPKG $DE_MAN --disable-download-timeout --needed --noconfirm

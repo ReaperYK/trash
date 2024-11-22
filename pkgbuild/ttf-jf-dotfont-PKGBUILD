@@ -14,7 +14,4 @@ package() {
 	cd "${srcdir}"
 	install -d "${pkgdir}/usr/share/fonts/TTF"
 	install -m 644 *.ttf "${pkgdir}/usr/share/fonts/TTF"
-    # install -m 644 JF-Dot-jiskan24.ttf "${pkgdir}/usr/share/fonts/TTF"
-	# install -Dm 644 'README_KHDotFont.txt' "${pkgdir}/usr/share/doc/${pkgname}/README"
-	# install -Dm 644 'SIL_Open_Font_License_1.1.txt' "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
