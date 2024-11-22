@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-################################################################################
-#                                                                                                                                                                                                                                        #
-# arch-installer - BlackArch Installer mod                                                                                                                                                        # 
-#                                                                                                                                                                                                                                        #
-# AUTHOR - noptrix(original) / ReaperYK(mod)                                                                                                                                              #
-#                                                                                                                                                                                                                                         #
+#################################################################################
+#                                                                                        #                                                                                                                                                        #
+# arch-installer - BlackArch Installer mod                                           # 
+#                                                                                        #                                                                                                                                               #
+# AUTHOR - noptrix(original) / ReaperYK(mod)                                         #
+#                                                                                         #                                                                                                                                                     #
 ################################################################################
 
 # version
