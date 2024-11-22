@@ -2,7 +2,7 @@
 pkgname=ttf-jf-dotfont
 pkgver=1.00.20150527
 pkgrel=1
-pkgdesc='A complete package of JF Japanese bitmap fonts.'
+pkgdesc='A complete package of JF Japanese bitmap fonts. (jiskan, shinonome, mplus, ..etc)'
 url='http://jikasei.me/font'
 arch=('any')
 license=('custom')
