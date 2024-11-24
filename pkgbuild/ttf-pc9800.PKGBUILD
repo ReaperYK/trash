@@ -10,7 +10,6 @@ source=(
 	'https://retro-type.com/PC98/font/pc-9800.ttf'
     'https://retro-type.com/PC98/font/pc-9800-bold.ttf'
 )
-
 #source=(
 # 'https://web.archive.org/web/20220215031454/https://retro-type.com/PC98/font/pc-9800.ttf
 # 'https://web.archive.org/web/20220215031449/https://retro-type.com/PC98/font/pc-9800-bold.ttf'
