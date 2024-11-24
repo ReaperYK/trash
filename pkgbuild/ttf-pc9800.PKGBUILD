@@ -5,7 +5,7 @@ pkgrel=1
 pkgdesc='NEC PC-9800 series built-in bitmap font (TTF version)'
 url='https://retro-type.com/PC98/font/'
 arch=('any')
-license=('unknown')
+license=('custo')
 source=(
 	'https://retro-type.com/PC98/font/pc-9800.ttf'
     'https://retro-type.com/PC98/font/pc-9800-bold.ttf'
