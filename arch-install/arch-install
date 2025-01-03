@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-#################################################################################
-#                                                                                        #                                                                                                                                                        #
-# arch-installer - BlackArch Installer mod                                           # 
-#                                                                                        #                                                                                                                                               #
-# AUTHOR - noptrix(original) / ReaperYK(mod)                                         #
-#                                                                                         #                                                                                                                                                     #
-################################################################################
+####################################
+# arch-installer  - custmized archlinux installer! #
+####################################
 
 # version
-VERSION='2.26.1'
+VERSION='1.0.0'
 
 # true / false
 TRUE=0
@@ -384,8 +380,8 @@ set_locale()
     LOCALE='ja_JP.UTF-8'
   fi
 
-#  localectl set-locale "LANG=$LOCALE"
-#  check $? 'setting locale'
+  LANG=$LOCALE
+  #  check $? 'setting locale'
 
   return $SUCCESS
 }
@@ -1399,6 +1395,20 @@ setup_hostname()
   return $SUCCESS
 }
 
+setup_grub_font() {
+  title 'Base System Setup > Boot Loader > Grub Font'
+
+  printf1 'Setting up GRUB font'
+  printf "\n\n"
+
+  curl -O https://ftp.iij.ad.jp/pub/osdn.jp/users/8/8542/jfdotfont-20150527.zip
+  unzip jfdotfont-20150527.zip
+  mkdir -p "$CHROOT/boot/grub/fonts"
+  grub-mkfont -s 16 -o "$CHROOT/boot/grub/fonts/JF-Dot-jiskan16.pf2" JF-Dot-jiskan16.ttf
+  echo "GRUB_FONT=\"/boot/grub/fonts/JF-Dot-jiskan16.pf2\"" >> "$CHROOT/etc/default/grub"
+  
+  return $SUCCESS
+}
 
 # setup boot loader for UEFI/GPT or BIOS/MBR
 setup_bootloader()
@@ -1427,7 +1437,7 @@ setup_bootloader()
 
     echo
 
-    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --boot-directory=/boot --bootloader-id="archlinux" --recheck
+    chroot $CHROOT grub-install --target=x86_64-efi --efi-directory=/boot --boot-directory=/boot --bootloader-id="ArchLinux" --recheck
     chroot $CHROOT grub-mkconfig -o /boot/grub/grub.cfg 
   else
     printf1 'Setting up GRUB boot loader'
@@ -1673,6 +1683,8 @@ else
   setup_extra_packages
   sleep_clear 1
 
+  setup_grub_font
+  sleep_clear 1
   setup_bootloader
   sleep_clear 1
 
@@ -2090,14 +2102,15 @@ setup_extrasystem()
   enable_iwd_networkmanager
   sleep_clear 1
   
-  ask_blackarch_mirror_setup
-  sleep_clear 1
-
-  if [ $BLACKARCH_SETUP = $TRUE ]; then
-   ask_mirror
+  if [ $ACTIVATE_BLACKARCH_SETUP = $TRUE ]; then
+   ask_blackarch_mirror_setup
    sleep_clear 1
-   run_strap_sh
-   sleep_clear 1
+    if [ $BLACKARCH_SETUP = $TRUE ]; then
+      ask_mirror
+      sleep_clear 1
+      run_strap_sh
+      sleep_clear 1
+    fi
   fi
 
   ask_de_setup
