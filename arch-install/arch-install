@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-####################################
+####################################################
 # arch-installer  - custmized archlinux installer! #
-####################################
+####################################################
 
 # version
 VERSION='1.0.0'
@@ -1683,8 +1683,6 @@ else
   setup_extra_packages
   sleep_clear 1
 
-  setup_grub_font
-  sleep_clear 1
   setup_bootloader
   sleep_clear 1
 
