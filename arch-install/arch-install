@@ -158,7 +158,7 @@ reflector_country=""
 
 ctrl_c() {
     printf "\n"
-    err 'Installation canceled! leaving...'
+    err 'Ctrl+C deleteced! leaving...'
     printf "\n"
     swapoff "$SWAP_PART" > /dev/null 2>&1
     exit $FAILURE
