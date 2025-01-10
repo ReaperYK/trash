@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-####################################################
-# arch-installer  - custmized archlinux installer! #
-####################################################
+###################################################
+# arch-installer  - custmized archlinux installer #
+###################################################
 
 # version
 VERSION='1.0.0'
